@@ -92,6 +92,13 @@ async def serve_agents_ui():
     return FileResponse(STATIC_DIR / "agents.html")
 
 
+@app.get("/skill", include_in_schema=False)
+async def serve_skill_md():
+    """Serve the SKILL.md documentation."""
+    skill_path = Path(__file__).parent / "SKILL.md"
+    return FileResponse(skill_path, media_type="text/markdown")
+
+
 # ============== REST API ENDPOINTS ==============
 
 @app.get("/")
