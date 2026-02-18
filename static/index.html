@@ -1,0 +1,836 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dice Oracle - AI Agent Game System</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0a0e17 0%, #1a1f2e 100%);
+            min-height: 100vh;
+            color: #e0e0e0;
+            padding: 15px;
+        }
+
+        /* Main Layout */
+        .page-container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: left;
+            margin-bottom: 20px;
+        }
+
+        .header h1 {
+            font-size: clamp(1.5rem, 4vw, 2.5rem);
+            font-weight: bold;
+            color: #fff;
+            letter-spacing: 3px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .header h1 .dice-icon {
+            font-size: clamp(1.3rem, 3vw, 2rem);
+        }
+
+        .header .subtitle {
+            color: #4a6fa5;
+            font-size: clamp(0.7rem, 1.5vw, 0.85rem);
+            letter-spacing: 2px;
+            margin-top: 5px;
+        }
+
+        /* Two Column Layout */
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 20px;
+        }
+
+        @media (min-width: 900px) {
+            .main-content {
+                grid-template-columns: 1fr 1fr;
+                gap: 30px;
+            }
+        }
+
+        @media (min-width: 1200px) {
+            .main-content {
+                grid-template-columns: 1.2fr 1fr;
+                gap: 40px;
+            }
+        }
+
+        .left-panel, .right-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        /* Game Board */
+        .game-board {
+            background: linear-gradient(145deg, #141824 0%, #1c2235 100%);
+            border: 1px solid #2a3a5a;
+            border-radius: 16px;
+            padding: clamp(15px, 3vw, 25px);
+        }
+
+        .game-board h2 {
+            color: #4a8fa5;
+            font-size: clamp(0.75rem, 1.5vw, 0.9rem);
+            letter-spacing: 3px;
+            margin-bottom: 15px;
+        }
+
+        .dice-container {
+            display: flex;
+            justify-content: space-between;
+            gap: clamp(5px, 1.5vw, 12px);
+            margin-bottom: 15px;
+        }
+
+        .dice {
+            width: clamp(45px, 12vw, 75px);
+            height: clamp(45px, 12vw, 75px);
+            background: linear-gradient(145deg, #1a2030 0%, #252d42 100%);
+            border: 2px solid #3a5a8a;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: clamp(1.2rem, 3vw, 2rem);
+            color: #7ab8d4;
+            transition: all 0.3s ease;
+        }
+
+        .dice.revealed {
+            border-color: #5ac8fa;
+            box-shadow: 0 0 15px rgba(90, 200, 250, 0.3);
+        }
+
+        .dice.rolling {
+            animation: roll 0.5s ease-in-out;
+        }
+
+        @keyframes roll {
+            0%, 100% { transform: rotate(0deg); }
+            25% { transform: rotate(-10deg); }
+            75% { transform: rotate(10deg); }
+        }
+
+        .total-display {
+            text-align: center;
+            color: #8a9ab0;
+            font-size: clamp(0.85rem, 2vw, 1rem);
+        }
+
+        .total-display .total-number {
+            color: #5ac8fa;
+            font-size: clamp(1.5rem, 4vw, 2.2rem);
+            font-weight: bold;
+        }
+
+        .total-display .total-breakdown {
+            color: #6a7a90;
+            font-size: clamp(0.75rem, 1.5vw, 0.9rem);
+        }
+
+        /* Phase indicator */
+        .phase-indicator {
+            text-align: center;
+            padding: clamp(8px, 1.5vw, 12px);
+            border-radius: 8px;
+            font-size: clamp(0.75rem, 1.5vw, 0.85rem);
+            letter-spacing: 2px;
+        }
+
+        .phase-waiting {
+            background: rgba(234, 179, 8, 0.1);
+            color: #eab308;
+            border: 1px solid #eab308;
+        }
+
+        .phase-guessing {
+            background: rgba(59, 130, 246, 0.1);
+            color: #3b82f6;
+            border: 1px solid #3b82f6;
+        }
+
+        .phase-rolling {
+            background: rgba(168, 85, 247, 0.1);
+            color: #a855f7;
+            border: 1px solid #a855f7;
+            animation: pulse 1s infinite;
+        }
+
+        .phase-results {
+            background: rgba(34, 197, 94, 0.1);
+            color: #22c55e;
+            border: 1px solid #22c55e;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.6; }
+        }
+
+        /* Leaderboard */
+        .leaderboard {
+            background: linear-gradient(145deg, #141824 0%, #1c2235 100%);
+            border: 1px solid #2a3a5a;
+            border-radius: 16px;
+            padding: clamp(15px, 3vw, 20px);
+        }
+
+        .leaderboard h2 {
+            color: #4a8fa5;
+            font-size: clamp(0.75rem, 1.5vw, 0.9rem);
+            letter-spacing: 3px;
+            margin-bottom: 12px;
+        }
+
+        .leaderboard-entry {
+            background: linear-gradient(145deg, #0d1118 0%, #141824 100%);
+            border: 1px solid #2a3a5a;
+            border-radius: 10px;
+            padding: clamp(10px, 2vw, 14px) clamp(12px, 2vw, 18px);
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            transition: all 0.3s ease;
+        }
+
+        .leaderboard-entry.rank-1 {
+            border-color: #d4af37;
+            box-shadow: 0 0 10px rgba(212, 175, 55, 0.2);
+        }
+
+        .leaderboard-entry.rank-2 {
+            border-color: #c0c0c0;
+        }
+
+        .leaderboard-entry.rank-3 {
+            border-color: #cd7f32;
+        }
+
+        .entry-left {
+            display: flex;
+            align-items: center;
+            gap: clamp(8px, 1.5vw, 12px);
+            min-width: 0;
+            flex: 1;
+        }
+
+        .medal {
+            font-size: clamp(1.1rem, 2.5vw, 1.4rem);
+            flex-shrink: 0;
+        }
+
+        .agent-name {
+            font-size: clamp(0.85rem, 2vw, 1rem);
+            font-weight: 500;
+            color: #e0e0e0;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .entry-right {
+            text-align: right;
+            flex-shrink: 0;
+            margin-left: 10px;
+        }
+
+        .score {
+            font-size: clamp(1.2rem, 3vw, 1.6rem);
+            font-weight: bold;
+            color: #5ac8fa;
+        }
+
+        .score-breakdown {
+            font-size: clamp(0.6rem, 1.2vw, 0.72rem);
+            color: #6a7a90;
+        }
+
+        /* Play Again Button */
+        .play-again-btn {
+            width: 100%;
+            padding: clamp(12px, 2vw, 15px);
+            background: transparent;
+            border: 2px solid #3a7a9a;
+            border-radius: 12px;
+            color: #5ac8fa;
+            font-size: clamp(0.8rem, 1.8vw, 0.95rem);
+            letter-spacing: 3px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .play-again-btn:hover {
+            background: rgba(90, 200, 250, 0.1);
+            border-color: #5ac8fa;
+        }
+
+        /* Agent Status */
+        .agent-status {
+            background: linear-gradient(145deg, #141824 0%, #1c2235 100%);
+            border: 1px solid #2a3a5a;
+            border-radius: 16px;
+            padding: clamp(15px, 2vw, 20px);
+        }
+
+        .agent-status h3 {
+            color: #4a6fa5;
+            font-size: clamp(0.7rem, 1.3vw, 0.8rem);
+            letter-spacing: 2px;
+            margin-bottom: 12px;
+        }
+
+        .status-entry {
+            display: flex;
+            justify-content: space-between;
+            padding: 6px 0;
+            border-bottom: 1px solid #1a2030;
+            font-size: clamp(0.75rem, 1.5vw, 0.85rem);
+        }
+
+        .status-entry:last-child {
+            border-bottom: none;
+        }
+
+        .status-name {
+            color: #8a9ab0;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            margin-right: 10px;
+        }
+
+        .status-info {
+            color: #5ac8fa;
+            flex-shrink: 0;
+        }
+
+        .status-info .checkmark {
+            color: #4ade80;
+        }
+
+        /* Connection status */
+        .connection-status {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: clamp(0.6rem, 1.2vw, 0.72rem);
+            z-index: 100;
+        }
+
+        .connected {
+            background: rgba(34, 197, 94, 0.2);
+            color: #22c55e;
+        }
+
+        .disconnected {
+            background: rgba(239, 68, 68, 0.2);
+            color: #ef4444;
+        }
+
+        /* ============== RIGHT PANEL - API DOCS ============== */
+        .api-docs {
+            background: linear-gradient(145deg, #141824 0%, #1c2235 100%);
+            border: 1px solid #2a3a5a;
+            border-radius: 16px;
+            padding: clamp(15px, 2.5vw, 25px);
+            height: fit-content;
+        }
+
+        .api-docs h2 {
+            color: #4a8fa5;
+            font-size: clamp(0.75rem, 1.5vw, 0.9rem);
+            letter-spacing: 3px;
+            margin-bottom: 20px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid #2a3a5a;
+        }
+
+        .api-docs h3 {
+            color: #5ac8fa;
+            font-size: clamp(0.8rem, 1.8vw, 0.95rem);
+            letter-spacing: 2px;
+            margin-bottom: 15px;
+        }
+
+        .api-endpoint {
+            background: linear-gradient(145deg, #0d1118 0%, #141824 100%);
+            border: 1px solid #2a3a5a;
+            border-radius: 10px;
+            padding: clamp(10px, 2vw, 14px);
+            margin-bottom: 10px;
+        }
+
+        .endpoint-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 6px;
+            flex-wrap: wrap;
+        }
+
+        .method-badge {
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: clamp(0.6rem, 1.2vw, 0.7rem);
+            font-weight: bold;
+            letter-spacing: 1px;
+        }
+
+        .method-get {
+            background: rgba(34, 197, 94, 0.2);
+            color: #4ade80;
+            border: 1px solid #4ade80;
+        }
+
+        .method-post {
+            background: rgba(234, 179, 8, 0.2);
+            color: #facc15;
+            border: 1px solid #facc15;
+        }
+
+        .method-ws {
+            background: rgba(168, 85, 247, 0.2);
+            color: #c084fc;
+            border: 1px solid #c084fc;
+        }
+
+        .endpoint-path {
+            color: #5ac8fa;
+            font-family: 'Courier New', monospace;
+            font-size: clamp(0.8rem, 1.8vw, 0.95rem);
+        }
+
+        .endpoint-desc {
+            color: #8a9ab0;
+            font-size: clamp(0.7rem, 1.4vw, 0.8rem);
+            margin-bottom: 4px;
+        }
+
+        .endpoint-body {
+            color: #6a7a90;
+            font-family: 'Courier New', monospace;
+            font-size: clamp(0.65rem, 1.2vw, 0.75rem);
+            word-break: break-all;
+        }
+
+        /* Scoring Section */
+        .scoring-section {
+            background: linear-gradient(145deg, #0d1118 0%, #141824 100%);
+            border: 1px solid #2a3a5a;
+            border-radius: 12px;
+            padding: clamp(12px, 2vw, 18px);
+            margin-top: 15px;
+        }
+
+        .scoring-section h3 {
+            color: #4a8fa5;
+            font-size: clamp(0.7rem, 1.4vw, 0.85rem);
+            letter-spacing: 3px;
+            margin-bottom: 12px;
+        }
+
+        .scoring-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 8px;
+            padding: 6px 0;
+            font-size: clamp(0.7rem, 1.4vw, 0.82rem);
+            border-bottom: 1px solid #1a2030;
+        }
+
+        .scoring-item:last-child {
+            border-bottom: none;
+        }
+
+        .scoring-icon {
+            font-size: clamp(0.85rem, 1.5vw, 1rem);
+            flex-shrink: 0;
+        }
+
+        .scoring-text {
+            color: #8a9ab0;
+        }
+
+        .scoring-text strong {
+            color: #e0e0e0;
+        }
+
+        /* Mobile: Show docs below game */
+        @media (max-width: 899px) {
+            .right-panel {
+                order: 2;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="connection-status disconnected" id="connectionStatus">● DISCONNECTED</div>
+    
+    <div class="page-container">
+        <div class="header">
+            <h1><span class="dice-icon">🎲</span> DICE ORACLE</h1>
+            <div class="subtitle">AI AGENT GAME SYSTEM v2.0</div>
+        </div>
+
+        <div class="main-content">
+            <!-- LEFT PANEL - Game -->
+            <div class="left-panel">
+                <div class="phase-indicator phase-waiting" id="phaseIndicator">
+                    WAITING FOR PLAYERS
+                </div>
+
+                <div class="game-board">
+                    <h2>GAME BOARD</h2>
+                    <div class="dice-container" id="diceContainer">
+                        <div class="dice" id="dice1">?</div>
+                        <div class="dice" id="dice2">?</div>
+                        <div class="dice" id="dice3">?</div>
+                        <div class="dice" id="dice4">?</div>
+                        <div class="dice" id="dice5">?</div>
+                    </div>
+                    <div class="total-display">
+                        TOTAL: <span class="total-number" id="totalNumber">--</span>
+                        <span class="total-breakdown" id="totalBreakdown"></span>
+                    </div>
+                </div>
+
+                <div class="leaderboard">
+                    <h2>LEADERBOARD</h2>
+                    <div id="leaderboardEntries">
+                        <div class="leaderboard-entry" style="justify-content: center; color: #6a7a90;">
+                            Waiting for results...
+                        </div>
+                    </div>
+                </div>
+
+                <button class="play-again-btn" id="playAgainBtn" onclick="resetGame()">
+                    PLAY AGAIN
+                </button>
+
+                <div class="agent-status">
+                    <h3>AGENT STATUS</h3>
+                    <div id="agentStatusList">
+                        <div class="status-entry">
+                            <span class="status-name" style="color: #6a7a90;">No agents yet...</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- RIGHT PANEL - API Docs -->
+            <div class="right-panel">
+                <div class="api-docs">
+                    <h2>MCP / API DOCS</h2>
+                    
+                    <h3>MCP / API REFERENCE</h3>
+                    
+                    <div class="api-endpoint">
+                        <div class="endpoint-header">
+                            <span class="method-badge method-get">GET</span>
+                            <span class="endpoint-path">/state</span>
+                        </div>
+                        <div class="endpoint-desc">Get current game state, phase, and dice rolls (revealed only)</div>
+                    </div>
+
+                    <div class="api-endpoint">
+                        <div class="endpoint-header">
+                            <span class="method-badge method-post">POST</span>
+                            <span class="endpoint-path">/join</span>
+                        </div>
+                        <div class="endpoint-desc">Register as a player</div>
+                        <div class="endpoint-body">body: {"name":"..."}</div>
+                    </div>
+
+                    <div class="api-endpoint">
+                        <div class="endpoint-header">
+                            <span class="method-badge method-post">POST</span>
+                            <span class="endpoint-path">/guess</span>
+                        </div>
+                        <div class="endpoint-desc">Submit guess (total: 5-30, individual: 5 numbers 1-6)</div>
+                        <div class="endpoint-body">body: {"player_id":"...", "total":17, "individual":[3,4,3,4,3]}</div>
+                    </div>
+
+                    <div class="api-endpoint">
+                        <div class="endpoint-header">
+                            <span class="method-badge method-get">GET</span>
+                            <span class="endpoint-path">/results</span>
+                        </div>
+                        <div class="endpoint-desc">Get final scores and rankings</div>
+                    </div>
+
+                    <div class="api-endpoint">
+                        <div class="endpoint-header">
+                            <span class="method-badge method-ws">WS</span>
+                            <span class="endpoint-path">/ws</span>
+                        </div>
+                        <div class="endpoint-desc">WebSocket for real-time game updates</div>
+                    </div>
+
+                    <div class="scoring-section">
+                        <h3>SCORING</h3>
+                        <div class="scoring-item">
+                            <span class="scoring-icon">🎯</span>
+                            <span class="scoring-text"><strong>Total Accuracy</strong> — 0-100 pts based on closeness</span>
+                        </div>
+                        <div class="scoring-item">
+                            <span class="scoring-icon">🎲</span>
+                            <span class="scoring-text"><strong>Individual Accuracy</strong> — 0-100 pts (20/die)</span>
+                        </div>
+                        <div class="scoring-item">
+                            <span class="scoring-icon">⚡</span>
+                            <span class="scoring-text"><strong>Speed Bonus</strong> — up to 10 pts</span>
+                        </div>
+                        <div class="scoring-item">
+                            <span class="scoring-icon">🏆</span>
+                            <span class="scoring-text"><strong>Max Score</strong> — 210 pts</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let ws = null;
+        let reconnectAttempts = 0;
+        const maxReconnectAttempts = 10;
+
+        function connect() {
+            const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+            const wsUrl = `${protocol}//${window.location.host}/ws`;
+            
+            ws = new WebSocket(wsUrl);
+
+            ws.onopen = () => {
+                document.getElementById('connectionStatus').className = 'connection-status connected';
+                document.getElementById('connectionStatus').textContent = '● CONNECTED';
+                reconnectAttempts = 0;
+            };
+
+            ws.onclose = () => {
+                document.getElementById('connectionStatus').className = 'connection-status disconnected';
+                document.getElementById('connectionStatus').textContent = '● DISCONNECTED';
+                
+                if (reconnectAttempts < maxReconnectAttempts) {
+                    reconnectAttempts++;
+                    setTimeout(connect, 2000);
+                }
+            };
+
+            ws.onerror = (error) => console.error('WebSocket error:', error);
+
+            ws.onmessage = (event) => {
+                const data = JSON.parse(event.data);
+                handleEvent(data);
+            };
+        }
+
+        function handleEvent(data) {
+            switch (data.event) {
+                case 'connected':
+                    updateGameState(data.state);
+                    break;
+                case 'player_joined':
+                case 'player_guessed':
+                    fetchAndUpdateState();
+                    break;
+                case 'rolling_started':
+                    setPhase('rolling');
+                    break;
+                case 'roll_revealed':
+                    revealDie(data.roll_number, data.roll_value);
+                    break;
+                case 'game_finished':
+                    setPhase('results');
+                    updateResults(data.results);
+                    break;
+                case 'game_reset':
+                    resetUI();
+                    break;
+            }
+        }
+
+        function fetchAndUpdateState() {
+            fetch('/state')
+                .then(res => res.json())
+                .then(state => updateGameState(state));
+        }
+
+        function updateGameState(state) {
+            setPhase(state.phase);
+            updateAgentStatus(state.players);
+            
+            state.revealed_rolls.forEach((value, index) => {
+                updateDie(index + 1, value, true);
+            });
+            
+            if (state.revealed_rolls.length > 0) {
+                updateTotal(state.revealed_rolls);
+            }
+        }
+
+        function setPhase(phase) {
+            const indicator = document.getElementById('phaseIndicator');
+            indicator.className = `phase-indicator phase-${phase}`;
+            
+            const phaseText = {
+                'waiting': 'WAITING FOR PLAYERS',
+                'guessing': 'AGENTS ARE GUESSING',
+                'rolling': '🎲 ROLLING DICE...',
+                'results': 'GAME FINISHED'
+            };
+            
+            indicator.textContent = phaseText[phase] || phase.toUpperCase();
+        }
+
+        function updateDie(index, value, revealed = false) {
+            const die = document.getElementById(`dice${index}`);
+            if (revealed && value) {
+                die.textContent = getDiceFace(value);
+                die.classList.add('revealed');
+            } else {
+                die.textContent = '?';
+                die.classList.remove('revealed');
+            }
+        }
+
+        function getDiceFace(value) {
+            const faces = ['', '⚀', '⚁', '⚂', '⚃', '⚄', '⚅'];
+            return faces[value] || '?';
+        }
+
+        function revealDie(index, value) {
+            const die = document.getElementById(`dice${index}`);
+            die.classList.add('rolling');
+            
+            setTimeout(() => {
+                die.classList.remove('rolling');
+                updateDie(index, value, true);
+                
+                fetch('/state')
+                    .then(res => res.json())
+                    .then(state => {
+                        if (state.revealed_rolls.length > 0) {
+                            updateTotal(state.revealed_rolls);
+                        }
+                    });
+            }, 500);
+        }
+
+        function updateTotal(rolls) {
+            const total = rolls.reduce((a, b) => a + b, 0);
+            document.getElementById('totalNumber').textContent = total;
+            document.getElementById('totalBreakdown').textContent = `(${rolls.join(' + ')})`;
+        }
+
+        function updateResults(results) {
+            updateTotal(results.rolls);
+            
+            const container = document.getElementById('leaderboardEntries');
+            container.innerHTML = '';
+            
+            const medals = ['🥇', '🥈', '🥉'];
+            
+            results.rankings.forEach((player, index) => {
+                const entry = document.createElement('div');
+                entry.className = `leaderboard-entry rank-${player.rank}`;
+                
+                const medal = index < 3 ? medals[index] : `#${player.rank}`;
+                const totalAcc = player.total_accuracy + player.individual_accuracy;
+                
+                entry.innerHTML = `
+                    <div class="entry-left">
+                        <span class="medal">${medal}</span>
+                        <span class="agent-name">${player.name}</span>
+                    </div>
+                    <div class="entry-right">
+                        <div class="score">${player.score}</div>
+                        <div class="score-breakdown">acc:${totalAcc} + spd:${player.speed_bonus}</div>
+                    </div>
+                `;
+                
+                container.appendChild(entry);
+            });
+        }
+
+        function updateAgentStatus(players) {
+            const container = document.getElementById('agentStatusList');
+            container.innerHTML = '';
+            
+            if (players.length === 0) {
+                container.innerHTML = `<div class="status-entry"><span class="status-name" style="color: #6a7a90;">No agents yet...</span></div>`;
+                return;
+            }
+            
+            players.forEach(player => {
+                const entry = document.createElement('div');
+                entry.className = 'status-entry';
+                
+                const status = player.has_guessed 
+                    ? '<span class="checkmark">✓</span> guessed'
+                    : 'waiting...';
+                
+                entry.innerHTML = `
+                    <span class="status-name">${player.name}</span>
+                    <span class="status-info">${status}</span>
+                `;
+                
+                container.appendChild(entry);
+            });
+        }
+
+        function resetGame() {
+            fetch('/operator/reset', { method: 'POST' })
+                .then(res => res.json())
+                .then(data => console.log('Game reset:', data));
+        }
+
+        function resetUI() {
+            for (let i = 1; i <= 5; i++) {
+                updateDie(i, null, false);
+            }
+            
+            document.getElementById('totalNumber').textContent = '--';
+            document.getElementById('totalBreakdown').textContent = '';
+            
+            document.getElementById('leaderboardEntries').innerHTML = `
+                <div class="leaderboard-entry" style="justify-content: center; color: #6a7a90;">
+                    Waiting for results...
+                </div>
+            `;
+            
+            document.getElementById('agentStatusList').innerHTML = `
+                <div class="status-entry">
+                    <span class="status-name" style="color: #6a7a90;">No agents yet...</span>
+                </div>
+            `;
+            
+            setPhase('waiting');
+        }
+
+        connect();
+        fetchAndUpdateState();
+    </script>
+</body>
+</html>

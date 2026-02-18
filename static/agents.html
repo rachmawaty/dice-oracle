@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agent Control Panel - Dice Oracle</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0a0e17 0%, #1a1f2e 100%);
+            min-height: 100vh;
+            color: #e0e0e0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 2rem;
+            color: #fff;
+            letter-spacing: 3px;
+            margin-bottom: 5px;
+        }
+
+        .header .subtitle {
+            color: #4a6fa5;
+            font-size: 0.85rem;
+            letter-spacing: 2px;
+        }
+
+        .agents-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        @media (max-width: 700px) {
+            .agents-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .agent-card {
+            background: linear-gradient(145deg, #141824 0%, #1c2235 100%);
+            border: 2px solid #2a3a5a;
+            border-radius: 16px;
+            padding: 20px;
+        }
+
+        .agent-card.agent-1 {
+            border-color: #3b82f6;
+        }
+
+        .agent-card.agent-2 {
+            border-color: #a855f7;
+        }
+
+        .agent-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+
+        .agent-name {
+            font-size: 1.3rem;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .agent-1 .agent-name { color: #3b82f6; }
+        .agent-2 .agent-name { color: #a855f7; }
+
+        .agent-status {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            letter-spacing: 1px;
+        }
+
+        .status-disconnected {
+            background: rgba(239, 68, 68, 0.2);
+            color: #ef4444;
+        }
+
+        .status-joined {
+            background: rgba(34, 197, 94, 0.2);
+            color: #22c55e;
+        }
+
+        .status-guessed {
+            background: rgba(168, 85, 247, 0.2);
+            color: #a855f7;
+        }
+
+        .form-section {
+            margin-bottom: 15px;
+        }
+
+        .form-section label {
+            display: block;
+            color: #8a9ab0;
+            font-size: 0.8rem;
+            letter-spacing: 1px;
+            margin-bottom: 6px;
+        }
+
+        .input-field {
+            width: 100%;
+            padding: 10px 14px;
+            background: #0d1118;
+            border: 1px solid #2a3a5a;
+            border-radius: 8px;
+            color: #e0e0e0;
+            font-size: 1rem;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+        .input-field:focus {
+            border-color: #5ac8fa;
+        }
+
+        .input-field:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .dice-inputs {
+            display: flex;
+            gap: 8px;
+        }
+
+        .dice-inputs .input-field {
+            width: 100%;
+            text-align: center;
+            padding: 10px 5px;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            font-weight: bold;
+            letter-spacing: 2px;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 10px;
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .btn-join {
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+            color: #fff;
+        }
+
+        .btn-join:hover:not(:disabled) {
+            background: linear-gradient(135deg, #60a5fa 0%, #3b82f6 100%);
+        }
+
+        .btn-guess {
+            background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+            color: #fff;
+        }
+
+        .btn-guess:hover:not(:disabled) {
+            background: linear-gradient(135deg, #4ade80 0%, #22c55e 100%);
+        }
+
+        .agent-2 .btn-join {
+            background: linear-gradient(135deg, #a855f7 0%, #9333ea 100%);
+        }
+
+        .agent-2 .btn-join:hover:not(:disabled) {
+            background: linear-gradient(135deg, #c084fc 0%, #a855f7 100%);
+        }
+
+        .log {
+            background: #0d1118;
+            border: 1px solid #2a3a5a;
+            border-radius: 8px;
+            padding: 10px;
+            margin-top: 15px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.8rem;
+            color: #6a7a90;
+            max-height: 100px;
+            overflow-y: auto;
+        }
+
+        .log-entry {
+            padding: 2px 0;
+        }
+
+        .log-success { color: #4ade80; }
+        .log-error { color: #ef4444; }
+        .log-info { color: #5ac8fa; }
+
+        /* Game Controls */
+        .game-controls {
+            background: linear-gradient(145deg, #141824 0%, #1c2235 100%);
+            border: 2px solid #d4af37;
+            border-radius: 16px;
+            padding: 20px;
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        .game-controls h2 {
+            color: #d4af37;
+            font-size: 1rem;
+            letter-spacing: 2px;
+            margin-bottom: 15px;
+        }
+
+        .control-btns {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .btn-operator {
+            padding: 10px 20px;
+            background: transparent;
+            border: 2px solid #d4af37;
+            border-radius: 8px;
+            color: #d4af37;
+            font-size: 0.85rem;
+            letter-spacing: 1px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-operator:hover {
+            background: rgba(212, 175, 55, 0.1);
+        }
+
+        .link-section {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .link-section a {
+            color: #5ac8fa;
+            text-decoration: none;
+        }
+
+        .link-section a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎮 AGENT CONTROL PANEL</h1>
+            <div class="subtitle">DICE ORACLE - CONTROL YOUR AI AGENTS</div>
+        </div>
+
+        <div class="agents-grid">
+            <!-- Agent 1 -->
+            <div class="agent-card agent-1">
+                <div class="agent-header">
+                    <span class="agent-name">🤖 Agent-1</span>
+                    <span class="agent-status status-disconnected" id="status1">NOT JOINED</span>
+                </div>
+
+                <div class="form-section">
+                    <label>AGENT NAME</label>
+                    <input type="text" class="input-field" id="name1" value="Agent-Blue" placeholder="Enter name">
+                </div>
+
+                <button class="btn btn-join" id="joinBtn1" onclick="joinAgent(1)">JOIN GAME</button>
+
+                <div class="form-section" style="margin-top: 20px;">
+                    <label>TOTAL GUESS (5-30)</label>
+                    <input type="number" class="input-field" id="total1" min="5" max="30" value="17" disabled>
+                </div>
+
+                <div class="form-section">
+                    <label>INDIVIDUAL GUESSES (1-6 each)</label>
+                    <div class="dice-inputs">
+                        <input type="number" class="input-field" id="d1_1" min="1" max="6" value="3" disabled>
+                        <input type="number" class="input-field" id="d1_2" min="1" max="6" value="3" disabled>
+                        <input type="number" class="input-field" id="d1_3" min="1" max="6" value="4" disabled>
+                        <input type="number" class="input-field" id="d1_4" min="1" max="6" value="4" disabled>
+                        <input type="number" class="input-field" id="d1_5" min="1" max="6" value="3" disabled>
+                    </div>
+                </div>
+
+                <button class="btn btn-guess" id="guessBtn1" onclick="submitGuess(1)" disabled>SUBMIT GUESS</button>
+
+                <div class="log" id="log1">
+                    <div class="log-entry log-info">Ready to join...</div>
+                </div>
+            </div>
+
+            <!-- Agent 2 -->
+            <div class="agent-card agent-2">
+                <div class="agent-header">
+                    <span class="agent-name">🤖 Agent-2</span>
+                    <span class="agent-status status-disconnected" id="status2">NOT JOINED</span>
+                </div>
+
+                <div class="form-section">
+                    <label>AGENT NAME</label>
+                    <input type="text" class="input-field" id="name2" value="Agent-Purple" placeholder="Enter name">
+                </div>
+
+                <button class="btn btn-join" id="joinBtn2" onclick="joinAgent(2)">JOIN GAME</button>
+
+                <div class="form-section" style="margin-top: 20px;">
+                    <label>TOTAL GUESS (5-30)</label>
+                    <input type="number" class="input-field" id="total2" min="5" max="30" value="18" disabled>
+                </div>
+
+                <div class="form-section">
+                    <label>INDIVIDUAL GUESSES (1-6 each)</label>
+                    <div class="dice-inputs">
+                        <input type="number" class="input-field" id="d2_1" min="1" max="6" value="4" disabled>
+                        <input type="number" class="input-field" id="d2_2" min="1" max="6" value="3" disabled>
+                        <input type="number" class="input-field" id="d2_3" min="1" max="6" value="4" disabled>
+                        <input type="number" class="input-field" id="d2_4" min="1" max="6" value="4" disabled>
+                        <input type="number" class="input-field" id="d2_5" min="1" max="6" value="3" disabled>
+                    </div>
+                </div>
+
+                <button class="btn btn-guess" id="guessBtn2" onclick="submitGuess(2)" disabled>SUBMIT GUESS</button>
+
+                <div class="log" id="log2">
+                    <div class="log-entry log-info">Ready to join...</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Operator Controls -->
+        <div class="game-controls">
+            <h2>🎲 OPERATOR CONTROLS</h2>
+            <div class="control-btns">
+                <button class="btn-operator" onclick="rollDice()">ROLL DICE</button>
+                <button class="btn-operator" onclick="resetGame()">RESET GAME</button>
+            </div>
+        </div>
+
+        <div class="link-section">
+            <p>👀 <a href="/game" target="_blank">Open Game Monitor</a> to watch the game!</p>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = window.location.origin;
+        
+        const agents = {
+            1: { playerId: null, joined: false, guessed: false },
+            2: { playerId: null, joined: false, guessed: false }
+        };
+
+        function log(agentNum, message, type = 'info') {
+            const logEl = document.getElementById(`log${agentNum}`);
+            const entry = document.createElement('div');
+            entry.className = `log-entry log-${type}`;
+            entry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            logEl.appendChild(entry);
+            logEl.scrollTop = logEl.scrollHeight;
+        }
+
+        function updateStatus(agentNum, status, text) {
+            const statusEl = document.getElementById(`status${agentNum}`);
+            statusEl.className = `agent-status status-${status}`;
+            statusEl.textContent = text;
+        }
+
+        async function joinAgent(agentNum) {
+            const name = document.getElementById(`name${agentNum}`).value;
+            
+            if (!name) {
+                log(agentNum, 'Please enter a name', 'error');
+                return;
+            }
+
+            try {
+                log(agentNum, `Joining as "${name}"...`, 'info');
+                
+                const response = await fetch(`${API_BASE}/join`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    agents[agentNum].playerId = data.player_id;
+                    agents[agentNum].joined = true;
+                    
+                    log(agentNum, `Joined! Player ID: ${data.player_id}`, 'success');
+                    updateStatus(agentNum, 'joined', 'JOINED');
+                    
+                    // Enable guess inputs
+                    document.getElementById(`total${agentNum}`).disabled = false;
+                    for (let i = 1; i <= 5; i++) {
+                        document.getElementById(`d${agentNum}_${i}`).disabled = false;
+                    }
+                    document.getElementById(`guessBtn${agentNum}`).disabled = false;
+                    document.getElementById(`joinBtn${agentNum}`).disabled = true;
+                    document.getElementById(`name${agentNum}`).disabled = true;
+                } else {
+                    log(agentNum, `Error: ${data.detail}`, 'error');
+                }
+            } catch (err) {
+                log(agentNum, `Connection error: ${err.message}`, 'error');
+            }
+        }
+
+        async function submitGuess(agentNum) {
+            const playerId = agents[agentNum].playerId;
+            
+            if (!playerId) {
+                log(agentNum, 'Not joined yet!', 'error');
+                return;
+            }
+
+            const total = parseInt(document.getElementById(`total${agentNum}`).value);
+            const individual = [];
+            for (let i = 1; i <= 5; i++) {
+                individual.push(parseInt(document.getElementById(`d${agentNum}_${i}`).value));
+            }
+
+            // Validate
+            if (total < 5 || total > 30) {
+                log(agentNum, 'Total must be 5-30', 'error');
+                return;
+            }
+            for (let d of individual) {
+                if (d < 1 || d > 6) {
+                    log(agentNum, 'Each die must be 1-6', 'error');
+                    return;
+                }
+            }
+
+            try {
+                log(agentNum, `Submitting: total=${total}, dice=[${individual.join(',')}]`, 'info');
+
+                const response = await fetch(`${API_BASE}/guess`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        player_id: playerId,
+                        total: total,
+                        individual: individual
+                    })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    agents[agentNum].guessed = true;
+                    log(agentNum, 'Guess submitted!', 'success');
+                    updateStatus(agentNum, 'guessed', 'GUESSED');
+                    document.getElementById(`guessBtn${agentNum}`).disabled = true;
+                } else {
+                    log(agentNum, `Error: ${data.detail}`, 'error');
+                }
+            } catch (err) {
+                log(agentNum, `Connection error: ${err.message}`, 'error');
+            }
+        }
+
+        async function rollDice() {
+            try {
+                const response = await fetch(`${API_BASE}/operator/reveal-all`, {
+                    method: 'POST'
+                });
+                const data = await response.json();
+                
+                if (response.ok) {
+                    alert(`🎲 Dice rolled!\n\nRolls: ${data.results.rolls.join(', ')}\nTotal: ${data.results.total}\n\nWinner: ${data.results.winner?.name || 'None'}`);
+                } else {
+                    alert(`Error: ${data.detail}`);
+                }
+            } catch (err) {
+                alert(`Connection error: ${err.message}`);
+            }
+        }
+
+        async function resetGame() {
+            try {
+                const response = await fetch(`${API_BASE}/operator/reset`, {
+                    method: 'POST'
+                });
+                
+                if (response.ok) {
+                    // Reset local state
+                    for (let i = 1; i <= 2; i++) {
+                        agents[i] = { playerId: null, joined: false, guessed: false };
+                        updateStatus(i, 'disconnected', 'NOT JOINED');
+                        document.getElementById(`joinBtn${i}`).disabled = false;
+                        document.getElementById(`name${i}`).disabled = false;
+                        document.getElementById(`guessBtn${i}`).disabled = true;
+                        document.getElementById(`total${i}`).disabled = true;
+                        for (let j = 1; j <= 5; j++) {
+                            document.getElementById(`d${i}_${j}`).disabled = true;
+                        }
+                        log(i, 'Game reset. Ready to join again!', 'info');
+                    }
+                    alert('🔄 Game reset!');
+                }
+            } catch (err) {
+                alert(`Connection error: ${err.message}`);
+            }
+        }
+    </script>
+</body>
+</html>
