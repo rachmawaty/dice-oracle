@@ -476,6 +476,74 @@
             color: #e0e0e0;
         }
 
+        /* Scoring Section Top */
+        .scoring-section-top {
+            background: linear-gradient(145deg, #141824 0%, #1c2235 100%);
+            border: 1px solid #2a3a5a;
+            border-radius: 16px;
+            padding: clamp(15px, 2.5vw, 20px);
+        }
+
+        .scoring-section-top h2 {
+            color: #4a8fa5;
+            font-size: clamp(0.75rem, 1.5vw, 0.9rem);
+            letter-spacing: 3px;
+            margin-bottom: 12px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #2a3a5a;
+        }
+
+        /* Collapsible Sections */
+        .collapsible-section {
+            background: linear-gradient(145deg, #141824 0%, #1c2235 100%);
+            border: 1px solid #2a3a5a;
+            border-radius: 16px;
+            overflow: hidden;
+        }
+
+        .collapsible-header {
+            padding: clamp(12px, 2vw, 16px) clamp(15px, 2.5vw, 20px);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            user-select: none;
+            transition: background 0.3s;
+        }
+
+        .collapsible-header:hover {
+            background: rgba(90, 200, 250, 0.05);
+        }
+
+        .collapsible-header h2 {
+            color: #4a8fa5;
+            font-size: clamp(0.7rem, 1.4vw, 0.85rem);
+            letter-spacing: 2px;
+            margin: 0;
+        }
+
+        .collapsible-toggle {
+            color: #4a8fa5;
+            font-size: 0.8rem;
+            transition: transform 0.3s;
+        }
+
+        .collapsible-section.open .collapsible-toggle {
+            transform: rotate(180deg);
+        }
+
+        .collapsible-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.4s ease;
+            padding: 0 clamp(15px, 2.5vw, 20px);
+        }
+
+        .collapsible-section.open .collapsible-content {
+            max-height: 1000px;
+            padding-bottom: clamp(15px, 2.5vw, 20px);
+        }
+
         /* Mobile: Show docs below game */
         @media (max-width: 899px) {
             .right-panel {
@@ -540,104 +608,115 @@
 
             <!-- RIGHT PANEL - API Docs -->
             <div class="right-panel">
-                <div class="api-docs">
-                    <h2>MCP / API DOCS</h2>
-                    
-                    <h3>MCP / API REFERENCE</h3>
-                    
-                    <div class="api-endpoint">
-                        <div class="endpoint-header">
-                            <span class="method-badge method-get">GET</span>
-                            <span class="endpoint-path">/state</span>
-                        </div>
-                        <div class="endpoint-desc">Get current game state, phase, and dice rolls (revealed only)</div>
+                <!-- Scoring Section (Top) -->
+                <div class="scoring-section-top">
+                    <h2>SCORING</h2>
+                    <div class="scoring-item">
+                        <span class="scoring-icon">🎯</span>
+                        <span class="scoring-text"><strong>Total Accuracy</strong> — 0-100 pts based on closeness</span>
                     </div>
-
-                    <div class="api-endpoint">
-                        <div class="endpoint-header">
-                            <span class="method-badge method-post">POST</span>
-                            <span class="endpoint-path">/join</span>
-                        </div>
-                        <div class="endpoint-desc">Register as a player</div>
-                        <div class="endpoint-body">body: {"name":"..."}</div>
+                    <div class="scoring-item">
+                        <span class="scoring-icon">🎲</span>
+                        <span class="scoring-text"><strong>Individual Accuracy</strong> — 0-100 pts (20/die)</span>
                     </div>
-
-                    <div class="api-endpoint">
-                        <div class="endpoint-header">
-                            <span class="method-badge method-post">POST</span>
-                            <span class="endpoint-path">/guess</span>
-                        </div>
-                        <div class="endpoint-desc">Submit guess (total: 5-30, individual: 5 numbers 1-6)</div>
-                        <div class="endpoint-body">body: {"player_id":"...", "total":17, "individual":[3,4,3,4,3]}</div>
+                    <div class="scoring-item">
+                        <span class="scoring-icon">⚡</span>
+                        <span class="scoring-text"><strong>Speed Bonus</strong> — up to 10 pts</span>
                     </div>
-
-                    <div class="api-endpoint">
-                        <div class="endpoint-header">
-                            <span class="method-badge method-get">GET</span>
-                            <span class="endpoint-path">/results</span>
-                        </div>
-                        <div class="endpoint-desc">Get final scores and rankings</div>
+                    <div class="scoring-item">
+                        <span class="scoring-icon">🏆</span>
+                        <span class="scoring-text"><strong>Max Score</strong> — 210 pts</span>
                     </div>
+                </div>
 
-                    <div class="api-endpoint">
-                        <div class="endpoint-header">
-                            <span class="method-badge method-ws">WS</span>
-                            <span class="endpoint-path">/ws</span>
-                        </div>
-                        <div class="endpoint-desc">WebSocket for real-time game updates</div>
+                <!-- API Reference (Collapsible) -->
+                <div class="collapsible-section" id="apiSection">
+                    <div class="collapsible-header" onclick="toggleSection('apiSection')">
+                        <h2>MCP / API REFERENCE</h2>
+                        <span class="collapsible-toggle">▼</span>
                     </div>
-
-                    <h3 style="margin-top: 20px;">OPERATOR ENDPOINTS</h3>
-
-                    <div class="api-endpoint">
-                        <div class="endpoint-header">
-                            <span class="method-badge method-post">POST</span>
-                            <span class="endpoint-path">/operator/start-rolling</span>
+                    <div class="collapsible-content">
+                        <div class="api-endpoint">
+                            <div class="endpoint-header">
+                                <span class="method-badge method-get">GET</span>
+                                <span class="endpoint-path">/state</span>
+                            </div>
+                            <div class="endpoint-desc">Get current game state, phase, and dice rolls (revealed only)</div>
                         </div>
-                        <div class="endpoint-desc">Start the rolling phase (generates dice)</div>
+
+                        <div class="api-endpoint">
+                            <div class="endpoint-header">
+                                <span class="method-badge method-post">POST</span>
+                                <span class="endpoint-path">/join</span>
+                            </div>
+                            <div class="endpoint-desc">Register as a player</div>
+                            <div class="endpoint-body">body: {"name":"..."}</div>
+                        </div>
+
+                        <div class="api-endpoint">
+                            <div class="endpoint-header">
+                                <span class="method-badge method-post">POST</span>
+                                <span class="endpoint-path">/guess</span>
+                            </div>
+                            <div class="endpoint-desc">Submit guess (total: 5-30, individual: 5 numbers 1-6)</div>
+                            <div class="endpoint-body">body: {"player_id":"...", "total":17, "individual":[3,4,3,4,3]}</div>
+                        </div>
+
+                        <div class="api-endpoint">
+                            <div class="endpoint-header">
+                                <span class="method-badge method-get">GET</span>
+                                <span class="endpoint-path">/results</span>
+                            </div>
+                            <div class="endpoint-desc">Get final scores and rankings</div>
+                        </div>
+
+                        <div class="api-endpoint">
+                            <div class="endpoint-header">
+                                <span class="method-badge method-ws">WS</span>
+                                <span class="endpoint-path">/ws</span>
+                            </div>
+                            <div class="endpoint-desc">WebSocket for real-time game updates</div>
+                        </div>
                     </div>
+                </div>
 
-                    <div class="api-endpoint">
-                        <div class="endpoint-header">
-                            <span class="method-badge method-post">POST</span>
-                            <span class="endpoint-path">/operator/reveal-next</span>
-                        </div>
-                        <div class="endpoint-desc">Reveal one die at a time</div>
+                <!-- Operator Endpoints (Collapsible) -->
+                <div class="collapsible-section" id="operatorSection">
+                    <div class="collapsible-header" onclick="toggleSection('operatorSection')">
+                        <h2>OPERATOR ENDPOINTS</h2>
+                        <span class="collapsible-toggle">▼</span>
                     </div>
+                    <div class="collapsible-content">
+                        <div class="api-endpoint">
+                            <div class="endpoint-header">
+                                <span class="method-badge method-post">POST</span>
+                                <span class="endpoint-path">/operator/start-rolling</span>
+                            </div>
+                            <div class="endpoint-desc">Start the rolling phase (generates dice)</div>
+                        </div>
 
-                    <div class="api-endpoint">
-                        <div class="endpoint-header">
-                            <span class="method-badge method-post">POST</span>
-                            <span class="endpoint-path">/operator/reveal-all</span>
+                        <div class="api-endpoint">
+                            <div class="endpoint-header">
+                                <span class="method-badge method-post">POST</span>
+                                <span class="endpoint-path">/operator/reveal-next</span>
+                            </div>
+                            <div class="endpoint-desc">Reveal one die at a time</div>
                         </div>
-                        <div class="endpoint-desc">Dramatic reveal — all dice with delays + results</div>
-                    </div>
 
-                    <div class="api-endpoint">
-                        <div class="endpoint-header">
-                            <span class="method-badge method-post">POST</span>
-                            <span class="endpoint-path">/operator/reset</span>
+                        <div class="api-endpoint">
+                            <div class="endpoint-header">
+                                <span class="method-badge method-post">POST</span>
+                                <span class="endpoint-path">/operator/reveal-all</span>
+                            </div>
+                            <div class="endpoint-desc">Dramatic reveal — all dice with delays + results</div>
                         </div>
-                        <div class="endpoint-desc">Reset game for a new round</div>
-                    </div>
 
-                    <div class="scoring-section">
-                        <h3>SCORING</h3>
-                        <div class="scoring-item">
-                            <span class="scoring-icon">🎯</span>
-                            <span class="scoring-text"><strong>Total Accuracy</strong> — 0-100 pts based on closeness</span>
-                        </div>
-                        <div class="scoring-item">
-                            <span class="scoring-icon">🎲</span>
-                            <span class="scoring-text"><strong>Individual Accuracy</strong> — 0-100 pts (20/die)</span>
-                        </div>
-                        <div class="scoring-item">
-                            <span class="scoring-icon">⚡</span>
-                            <span class="scoring-text"><strong>Speed Bonus</strong> — up to 10 pts</span>
-                        </div>
-                        <div class="scoring-item">
-                            <span class="scoring-icon">🏆</span>
-                            <span class="scoring-text"><strong>Max Score</strong> — 210 pts</span>
+                        <div class="api-endpoint">
+                            <div class="endpoint-header">
+                                <span class="method-badge method-post">POST</span>
+                                <span class="endpoint-path">/operator/reset</span>
+                            </div>
+                            <div class="endpoint-desc">Reset game for a new round</div>
                         </div>
                     </div>
                 </div>
@@ -861,6 +940,11 @@
             `;
             
             setPhase('waiting');
+        }
+
+        // Toggle collapsible sections
+        function toggleSection(sectionId) {
+            document.getElementById(sectionId).classList.toggle('open');
         }
 
         connect();
