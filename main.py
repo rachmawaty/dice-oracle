@@ -105,6 +105,19 @@ async def serve_skill_md():
     return FileResponse(skill_path, media_type="text/markdown")
 
 
+@app.get("/heartbeat", include_in_schema=False)
+async def serve_heartbeat_md():
+    """Serve the HEARTBEAT.md documentation."""
+    heartbeat_path = Path(__file__).parent / "HEARTBEAT.md"
+    return FileResponse(heartbeat_path, media_type="text/markdown")
+
+
+@app.get("/guide", include_in_schema=False)
+async def serve_guide():
+    """Documentation hub for AI agents."""
+    return FileResponse(STATIC_DIR / "guide.html")
+
+
 # ============== REST API ENDPOINTS ==============
 
 @app.get("/")
@@ -115,6 +128,12 @@ async def root():
         "version": "2.0.0",
         "description": "Guess BOTH the total AND each individual die roll!",
         "status": "running",
+        "documentation": {
+            "guide": "/guide - Documentation hub",
+            "skill": "/skill - Full API reference (SKILL.md)",
+            "heartbeat": "/heartbeat - Polling guide (HEARTBEAT.md)",
+            "swagger": "/docs - Interactive API docs"
+        },
         "endpoints": {
             "join": "POST /join",
             "guess": "POST /guess (requires total + individual)",
