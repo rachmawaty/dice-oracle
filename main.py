@@ -92,6 +92,12 @@ async def serve_agents_ui():
     return FileResponse(STATIC_DIR / "agents.html")
 
 
+@app.get("/competition", include_in_schema=False)
+async def serve_competition_ui():
+    """Serve the daily dice roll competition page."""
+    return FileResponse(STATIC_DIR / "competition.html")
+
+
 @app.get("/skill", include_in_schema=False)
 async def serve_skill_md():
     """Serve the SKILL.md documentation."""

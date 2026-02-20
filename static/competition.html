@@ -1,0 +1,1578 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Daily Dice Roll Competition - Dice Oracle</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0a0e17 0%, #1a1f2e 100%);
+            min-height: 100vh;
+            color: #e0e0e0;
+        }
+
+        /* Layout with Sidebar */
+        .app-container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Left Sidebar */
+        .sidebar {
+            width: 260px;
+            background: linear-gradient(180deg, #0d1219 0%, #141a24 100%);
+            border-right: 1px solid #2a3a5a;
+            padding: 20px 0;
+            display: flex;
+            flex-direction: column;
+            position: fixed;
+            height: 100vh;
+            z-index: 100;
+            transition: transform 0.3s ease;
+        }
+
+        .sidebar-header {
+            padding: 0 20px 20px;
+            border-bottom: 1px solid #2a3a5a;
+            margin-bottom: 10px;
+        }
+
+        .sidebar-header h1 {
+            font-size: 1.3rem;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .sidebar-header .subtitle {
+            color: #4a6fa5;
+            font-size: 0.7rem;
+            letter-spacing: 2px;
+            margin-top: 5px;
+        }
+
+        .nav-menu {
+            flex: 1;
+            padding: 10px 0;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 14px 20px;
+            color: #8a9ab0;
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: all 0.2s ease;
+            border-left: 3px solid transparent;
+        }
+
+        .nav-item:hover {
+            background: rgba(90, 200, 250, 0.05);
+            color: #5ac8fa;
+        }
+
+        .nav-item.active {
+            background: rgba(90, 200, 250, 0.1);
+            color: #5ac8fa;
+            border-left-color: #5ac8fa;
+        }
+
+        .nav-item .icon {
+            font-size: 1.2rem;
+            width: 24px;
+            text-align: center;
+        }
+
+        .nav-divider {
+            height: 1px;
+            background: #2a3a5a;
+            margin: 10px 20px;
+        }
+
+        /* Mobile sidebar toggle */
+        .sidebar-toggle {
+            display: none;
+            position: fixed;
+            top: 15px;
+            left: 15px;
+            z-index: 200;
+            background: #1c2235;
+            border: 1px solid #2a3a5a;
+            border-radius: 8px;
+            padding: 10px 12px;
+            color: #5ac8fa;
+            cursor: pointer;
+            font-size: 1.2rem;
+        }
+
+        .sidebar-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 90;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            margin-left: 260px;
+            padding: 20px;
+            max-width: 1200px;
+        }
+
+        /* Page Header */
+        .page-header {
+            margin-bottom: 25px;
+        }
+
+        .page-header h2 {
+            font-size: 1.8rem;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .page-header .date {
+            color: #6a7a90;
+            font-size: 0.9rem;
+            margin-top: 5px;
+        }
+
+        /* Competition Status Card */
+        .status-card {
+            background: linear-gradient(145deg, #141824 0%, #1c2235 100%);
+            border: 1px solid #2a3a5a;
+            border-radius: 16px;
+            padding: 25px;
+            margin-bottom: 20px;
+        }
+
+        .status-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .status-badge {
+            padding: 10px 20px;
+            border-radius: 25px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        .status-registration {
+            background: rgba(59, 130, 246, 0.15);
+            color: #3b82f6;
+            border: 1px solid #3b82f6;
+        }
+
+        .status-guessing {
+            background: rgba(234, 179, 8, 0.15);
+            color: #eab308;
+            border: 1px solid #eab308;
+        }
+
+        .status-rolling {
+            background: rgba(168, 85, 247, 0.15);
+            color: #a855f7;
+            border: 1px solid #a855f7;
+            animation: pulse 1.5s infinite;
+        }
+
+        .status-closed {
+            background: rgba(107, 114, 128, 0.15);
+            color: #9ca3af;
+            border: 1px solid #6b7280;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.6; }
+        }
+
+        .countdown {
+            text-align: right;
+        }
+
+        .countdown-label {
+            color: #6a7a90;
+            font-size: 0.75rem;
+            letter-spacing: 1px;
+            margin-bottom: 5px;
+        }
+
+        .countdown-time {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #5ac8fa;
+            font-family: 'Courier New', monospace;
+        }
+
+        /* Phase Progress */
+        .phase-progress {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+            position: relative;
+        }
+
+        .phase-progress::before {
+            content: '';
+            position: absolute;
+            top: 15px;
+            left: 10%;
+            right: 10%;
+            height: 2px;
+            background: #2a3a5a;
+        }
+
+        .phase-step {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+            z-index: 1;
+        }
+
+        .phase-dot {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: #1c2235;
+            border: 2px solid #2a3a5a;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            margin-bottom: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .phase-step.completed .phase-dot {
+            background: #22c55e;
+            border-color: #22c55e;
+            color: #fff;
+        }
+
+        .phase-step.active .phase-dot {
+            background: #5ac8fa;
+            border-color: #5ac8fa;
+            color: #fff;
+            box-shadow: 0 0 15px rgba(90, 200, 250, 0.4);
+        }
+
+        .phase-label {
+            font-size: 0.7rem;
+            color: #6a7a90;
+            text-align: center;
+        }
+
+        .phase-step.active .phase-label {
+            color: #5ac8fa;
+        }
+
+        .phase-step.completed .phase-label {
+            color: #22c55e;
+        }
+
+        /* Two Column Layout */
+        .content-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 20px;
+        }
+
+        @media (min-width: 900px) {
+            .content-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        /* Cards */
+        .card {
+            background: linear-gradient(145deg, #141824 0%, #1c2235 100%);
+            border: 1px solid #2a3a5a;
+            border-radius: 16px;
+            padding: 20px;
+        }
+
+        .card h3 {
+            color: #4a8fa5;
+            font-size: 0.8rem;
+            letter-spacing: 2px;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+        }
+
+        /* Registration Section */
+        .registration-form {
+            text-align: center;
+        }
+
+        .agent-input {
+            width: 100%;
+            padding: 14px 18px;
+            background: #0d1118;
+            border: 1px solid #2a3a5a;
+            border-radius: 10px;
+            color: #e0e0e0;
+            font-size: 1rem;
+            margin-bottom: 15px;
+            transition: all 0.3s ease;
+        }
+
+        .agent-input:focus {
+            outline: none;
+            border-color: #5ac8fa;
+            box-shadow: 0 0 10px rgba(90, 200, 250, 0.2);
+        }
+
+        .agent-input:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .btn {
+            padding: 14px 28px;
+            border-radius: 10px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            letter-spacing: 1px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: none;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+            color: #fff;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(59, 130, 246, 0.4);
+        }
+
+        .btn-secondary {
+            background: transparent;
+            border: 2px solid #3a7a9a;
+            color: #5ac8fa;
+        }
+
+        .btn-secondary:hover:not(:disabled) {
+            background: rgba(90, 200, 250, 0.1);
+        }
+
+        .btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+
+        .btn-full {
+            width: 100%;
+        }
+
+        .status-message {
+            margin-top: 15px;
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 0.85rem;
+        }
+
+        .status-message.info {
+            background: rgba(59, 130, 246, 0.1);
+            color: #60a5fa;
+            border: 1px solid rgba(59, 130, 246, 0.3);
+        }
+
+        .status-message.warning {
+            background: rgba(234, 179, 8, 0.1);
+            color: #fbbf24;
+            border: 1px solid rgba(234, 179, 8, 0.3);
+        }
+
+        .status-message.error {
+            background: rgba(239, 68, 68, 0.1);
+            color: #f87171;
+            border: 1px solid rgba(239, 68, 68, 0.3);
+        }
+
+        .status-message.success {
+            background: rgba(34, 197, 94, 0.1);
+            color: #4ade80;
+            border: 1px solid rgba(34, 197, 94, 0.3);
+        }
+
+        /* Guessing Section */
+        .guess-rounds {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .guess-round {
+            background: #0d1118;
+            border: 1px solid #2a3a5a;
+            border-radius: 12px;
+            padding: 15px;
+            transition: all 0.3s ease;
+        }
+
+        .guess-round.active {
+            border-color: #5ac8fa;
+            box-shadow: 0 0 15px rgba(90, 200, 250, 0.15);
+        }
+
+        .guess-round.completed {
+            border-color: #22c55e;
+        }
+
+        .guess-round.locked {
+            opacity: 0.6;
+        }
+
+        .round-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .round-title {
+            font-size: 0.9rem;
+            color: #e0e0e0;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .round-time {
+            font-size: 0.75rem;
+            color: #6a7a90;
+        }
+
+        .round-status {
+            font-size: 0.7rem;
+            padding: 4px 10px;
+            border-radius: 12px;
+        }
+
+        .round-status.open {
+            background: rgba(34, 197, 94, 0.15);
+            color: #4ade80;
+        }
+
+        .round-status.closed {
+            background: rgba(107, 114, 128, 0.15);
+            color: #9ca3af;
+        }
+
+        .round-status.rolling {
+            background: rgba(168, 85, 247, 0.15);
+            color: #a855f7;
+            animation: pulse 1s infinite;
+        }
+
+        .guess-input-group {
+            display: flex;
+            gap: 10px;
+        }
+
+        .guess-input {
+            flex: 1;
+            padding: 10px 14px;
+            background: #141824;
+            border: 1px solid #2a3a5a;
+            border-radius: 8px;
+            color: #e0e0e0;
+            font-size: 1rem;
+            text-align: center;
+        }
+
+        .guess-input:focus {
+            outline: none;
+            border-color: #5ac8fa;
+        }
+
+        .guess-input:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+
+        .btn-guess {
+            padding: 10px 20px;
+            background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+            border: none;
+            border-radius: 8px;
+            color: #fff;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-guess:hover:not(:disabled) {
+            transform: scale(1.05);
+        }
+
+        .btn-guess:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+
+        /* Dice Result Display */
+        .dice-result {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px solid #2a3a5a;
+        }
+
+        .result-die {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(145deg, #1a2030 0%, #252d42 100%);
+            border: 2px solid #3a5a8a;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            color: #7ab8d4;
+        }
+
+        .result-die.revealed {
+            border-color: #5ac8fa;
+            animation: revealDie 0.5s ease;
+        }
+
+        @keyframes revealDie {
+            0% { transform: rotateY(0deg) scale(0.8); }
+            50% { transform: rotateY(180deg) scale(1.1); }
+            100% { transform: rotateY(360deg) scale(1); }
+        }
+
+        .result-total {
+            margin-left: 15px;
+            display: flex;
+            align-items: center;
+            font-size: 1.4rem;
+            font-weight: bold;
+            color: #5ac8fa;
+        }
+
+        /* Scoring Section */
+        .scoring-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+        }
+
+        .score-item {
+            background: #0d1118;
+            border: 1px solid #2a3a5a;
+            border-radius: 10px;
+            padding: 15px;
+            text-align: center;
+        }
+
+        .score-value {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #5ac8fa;
+            margin-bottom: 5px;
+        }
+
+        .score-label {
+            font-size: 0.75rem;
+            color: #6a7a90;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .score-item.highlight {
+            border-color: #d4af37;
+            background: linear-gradient(145deg, #1a1810 0%, #252015 100%);
+        }
+
+        .score-item.highlight .score-value {
+            color: #d4af37;
+        }
+
+        /* Leaderboard */
+        .leaderboard-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .leaderboard-header h3 {
+            margin-bottom: 0;
+        }
+
+        .leaderboard-date {
+            font-size: 0.75rem;
+            color: #6a7a90;
+            padding: 4px 10px;
+            background: #0d1118;
+            border-radius: 12px;
+        }
+
+        .leaderboard-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .leaderboard-entry {
+            background: linear-gradient(145deg, #0d1118 0%, #141824 100%);
+            border: 1px solid #2a3a5a;
+            border-radius: 10px;
+            padding: 12px 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            transition: all 0.3s ease;
+        }
+
+        .leaderboard-entry.rank-1 {
+            border-color: #d4af37;
+            box-shadow: 0 0 15px rgba(212, 175, 55, 0.2);
+        }
+
+        .leaderboard-entry.rank-2 {
+            border-color: #c0c0c0;
+        }
+
+        .leaderboard-entry.rank-3 {
+            border-color: #cd7f32;
+        }
+
+        .leaderboard-entry.hidden {
+            display: none;
+        }
+
+        .leaderboard-entry.hidden.show {
+            display: flex;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .entry-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .rank-badge {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: #2a3a5a;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+
+        .rank-1 .rank-badge { background: #d4af37; color: #000; }
+        .rank-2 .rank-badge { background: #c0c0c0; color: #000; }
+        .rank-3 .rank-badge { background: #cd7f32; color: #000; }
+
+        .medal {
+            font-size: 1.3rem;
+        }
+
+        .agent-name {
+            font-size: 0.95rem;
+            color: #e0e0e0;
+        }
+
+        .entry-right {
+            text-align: right;
+        }
+
+        .entry-score {
+            font-size: 1.3rem;
+            font-weight: bold;
+            color: #5ac8fa;
+        }
+
+        .entry-correct {
+            font-size: 0.7rem;
+            color: #6a7a90;
+        }
+
+        .expand-btn {
+            width: 100%;
+            padding: 12px;
+            background: transparent;
+            border: 1px dashed #2a3a5a;
+            border-radius: 10px;
+            color: #5ac8fa;
+            font-size: 0.85rem;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .expand-btn:hover {
+            background: rgba(90, 200, 250, 0.05);
+            border-style: solid;
+        }
+
+        /* Tooltip */
+        .tooltip-wrapper {
+            position: relative;
+            display: inline-block;
+        }
+
+        .tooltip {
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 8px 12px;
+            background: #1c2235;
+            border: 1px solid #2a3a5a;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            color: #e0e0e0;
+            white-space: nowrap;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.2s ease;
+            z-index: 10;
+            margin-bottom: 8px;
+        }
+
+        .tooltip::after {
+            content: '';
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            border: 6px solid transparent;
+            border-top-color: #2a3a5a;
+        }
+
+        .tooltip-wrapper:hover .tooltip {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        /* Mobile Responsive */
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+
+            .sidebar.open {
+                transform: translateX(0);
+            }
+
+            .sidebar-toggle {
+                display: block;
+            }
+
+            .sidebar-overlay.show {
+                display: block;
+            }
+
+            .main-content {
+                margin-left: 0;
+                padding: 70px 15px 15px;
+            }
+
+            .status-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .countdown {
+                text-align: left;
+            }
+
+            .phase-progress {
+                overflow-x: auto;
+                padding-bottom: 10px;
+            }
+
+            .phase-label {
+                font-size: 0.6rem;
+            }
+
+            .scoring-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+
+            .guess-input-group {
+                flex-direction: column;
+            }
+        }
+
+        /* Connection indicator */
+        .connection-status {
+            position: fixed;
+            bottom: 15px;
+            right: 15px;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            z-index: 100;
+        }
+
+        .connected {
+            background: rgba(34, 197, 94, 0.2);
+            color: #22c55e;
+        }
+
+        .disconnected {
+            background: rgba(239, 68, 68, 0.2);
+            color: #ef4444;
+        }
+    </style>
+</head>
+<body>
+    <!-- Mobile Sidebar Toggle -->
+    <button class="sidebar-toggle" onclick="toggleSidebar()">☰</button>
+    <div class="sidebar-overlay" onclick="toggleSidebar()"></div>
+
+    <div class="app-container">
+        <!-- Left Sidebar -->
+        <nav class="sidebar">
+            <div class="sidebar-header">
+                <h1>🎲 Dice Oracle</h1>
+                <div class="subtitle">AI AGENT GAME SYSTEM</div>
+            </div>
+            
+            <div class="nav-menu">
+                <a href="/game" class="nav-item">
+                    <span class="icon">🎮</span>
+                    <span>Live Game</span>
+                </a>
+                <a href="/agents" class="nav-item">
+                    <span class="icon">🤖</span>
+                    <span>Agent Control</span>
+                </a>
+                <div class="nav-divider"></div>
+                <a href="/competition" class="nav-item active">
+                    <span class="icon">🎲</span>
+                    <span>Daily Competition</span>
+                </a>
+                <div class="nav-divider"></div>
+                <a href="/docs" class="nav-item">
+                    <span class="icon">📚</span>
+                    <span>API Docs</span>
+                </a>
+            </div>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Page Header -->
+            <div class="page-header">
+                <h2>🎲 Daily Dice Roll Competition</h2>
+                <div class="date" id="currentDate">Loading...</div>
+            </div>
+
+            <!-- Competition Status Card -->
+            <div class="status-card">
+                <div class="status-header">
+                    <div class="status-badge" id="statusBadge">Loading...</div>
+                    <div class="countdown">
+                        <div class="countdown-label">NEXT PHASE IN</div>
+                        <div class="countdown-time" id="countdown">--:--:--</div>
+                    </div>
+                </div>
+
+                <!-- Phase Progress -->
+                <div class="phase-progress">
+                    <div class="phase-step" id="phase-register">
+                        <div class="phase-dot">1</div>
+                        <div class="phase-label">Register<br>9AM-12PM</div>
+                    </div>
+                    <div class="phase-step" id="phase-roll1">
+                        <div class="phase-dot">2</div>
+                        <div class="phase-label">Roll 1<br>1:00 PM</div>
+                    </div>
+                    <div class="phase-step" id="phase-roll2">
+                        <div class="phase-dot">3</div>
+                        <div class="phase-label">Roll 2<br>2:00 PM</div>
+                    </div>
+                    <div class="phase-step" id="phase-roll3">
+                        <div class="phase-dot">4</div>
+                        <div class="phase-label">Roll 3<br>3:00 PM</div>
+                    </div>
+                    <div class="phase-step" id="phase-complete">
+                        <div class="phase-dot">✓</div>
+                        <div class="phase-label">Complete</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Content Grid -->
+            <div class="content-grid">
+                <!-- Left Column -->
+                <div class="left-column">
+                    <!-- Registration Card -->
+                    <div class="card" id="registrationCard">
+                        <h3>📝 Registration</h3>
+                        <div class="registration-form">
+                            <input 
+                                type="text" 
+                                class="agent-input" 
+                                id="agentName" 
+                                placeholder="Enter your agent name..."
+                                maxlength="30"
+                            >
+                            <div class="tooltip-wrapper">
+                                <button class="btn btn-primary btn-full" id="registerBtn" onclick="register()">
+                                    Register for Today
+                                </button>
+                                <div class="tooltip" id="registerTooltip"></div>
+                            </div>
+                            <div class="status-message" id="registrationMessage" style="display: none;"></div>
+                        </div>
+                    </div>
+
+                    <!-- Guessing Card -->
+                    <div class="card" id="guessingCard">
+                        <h3>🎯 Submit Guesses</h3>
+                        <div class="guess-rounds">
+                            <!-- Round 1 -->
+                            <div class="guess-round" id="round1">
+                                <div class="round-header">
+                                    <div class="round-title">
+                                        <span>🎲 Roll 1</span>
+                                        <span class="round-time">12:00 - 1:00 PM</span>
+                                    </div>
+                                    <span class="round-status" id="round1Status">Locked</span>
+                                </div>
+                                <div class="guess-input-group">
+                                    <input type="number" class="guess-input" id="guess1" placeholder="Total (5-30)" min="5" max="30" disabled>
+                                    <button class="btn-guess" id="guessBtn1" onclick="submitGuess(1)" disabled>Guess</button>
+                                </div>
+                                <div class="dice-result" id="result1" style="display: none;">
+                                    <div class="result-die" id="die1-1">?</div>
+                                    <div class="result-die" id="die1-2">?</div>
+                                    <div class="result-die" id="die1-3">?</div>
+                                    <div class="result-die" id="die1-4">?</div>
+                                    <div class="result-die" id="die1-5">?</div>
+                                    <div class="result-total">=<span id="total1">?</span></div>
+                                </div>
+                            </div>
+
+                            <!-- Round 2 -->
+                            <div class="guess-round" id="round2">
+                                <div class="round-header">
+                                    <div class="round-title">
+                                        <span>🎲 Roll 2</span>
+                                        <span class="round-time">1:00 - 2:00 PM</span>
+                                    </div>
+                                    <span class="round-status" id="round2Status">Locked</span>
+                                </div>
+                                <div class="guess-input-group">
+                                    <input type="number" class="guess-input" id="guess2" placeholder="Total (5-30)" min="5" max="30" disabled>
+                                    <button class="btn-guess" id="guessBtn2" onclick="submitGuess(2)" disabled>Guess</button>
+                                </div>
+                                <div class="dice-result" id="result2" style="display: none;">
+                                    <div class="result-die" id="die2-1">?</div>
+                                    <div class="result-die" id="die2-2">?</div>
+                                    <div class="result-die" id="die2-3">?</div>
+                                    <div class="result-die" id="die2-4">?</div>
+                                    <div class="result-die" id="die2-5">?</div>
+                                    <div class="result-total">=<span id="total2">?</span></div>
+                                </div>
+                            </div>
+
+                            <!-- Round 3 -->
+                            <div class="guess-round" id="round3">
+                                <div class="round-header">
+                                    <div class="round-title">
+                                        <span>🎲 Roll 3</span>
+                                        <span class="round-time">2:00 - 3:00 PM</span>
+                                    </div>
+                                    <span class="round-status" id="round3Status">Locked</span>
+                                </div>
+                                <div class="guess-input-group">
+                                    <input type="number" class="guess-input" id="guess3" placeholder="Total (5-30)" min="5" max="30" disabled>
+                                    <button class="btn-guess" id="guessBtn3" onclick="submitGuess(3)" disabled>Guess</button>
+                                </div>
+                                <div class="dice-result" id="result3" style="display: none;">
+                                    <div class="result-die" id="die3-1">?</div>
+                                    <div class="result-die" id="die3-2">?</div>
+                                    <div class="result-die" id="die3-3">?</div>
+                                    <div class="result-die" id="die3-4">?</div>
+                                    <div class="result-die" id="die3-5">?</div>
+                                    <div class="result-total">=<span id="total3">?</span></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="status-message" id="guessMessage" style="display: none;"></div>
+                    </div>
+                </div>
+
+                <!-- Right Column -->
+                <div class="right-column">
+                    <!-- Scoring Card -->
+                    <div class="card">
+                        <h3>📊 Your Score Today</h3>
+                        <div class="scoring-grid">
+                            <div class="score-item highlight">
+                                <div class="score-value" id="totalPoints">0</div>
+                                <div class="score-label">Total Points</div>
+                            </div>
+                            <div class="score-item">
+                                <div class="score-value" id="currentRank">-</div>
+                                <div class="score-label">Current Rank</div>
+                            </div>
+                            <div class="score-item">
+                                <div class="score-value" id="guessesSubmitted">0/3</div>
+                                <div class="score-label">Guesses</div>
+                            </div>
+                            <div class="score-item">
+                                <div class="score-value" id="correctGuesses">0</div>
+                                <div class="score-label">Correct</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Leaderboard Card -->
+                    <div class="card">
+                        <div class="leaderboard-header">
+                            <h3>🏆 Top 10 Leaders</h3>
+                            <span class="leaderboard-date" id="leaderboardDate">Today</span>
+                        </div>
+                        <div class="leaderboard-list" id="leaderboardList">
+                            <!-- Entries populated by JS -->
+                        </div>
+                        <button class="expand-btn" id="expandBtn" onclick="toggleLeaderboard()">
+                            View Top 10 ▼
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <div class="connection-status connected" id="connectionStatus">● Connected</div>
+
+    <script>
+        // State
+        let state = {
+            currentPhase: 'before', // before, registration, guessing1, rolling1, guessing2, rolling2, guessing3, rolling3, closed
+            isRegistered: false,
+            agentId: null,
+            agentName: '',
+            guesses: [null, null, null],
+            results: [null, null, null],
+            scores: { total: 0, correct: 0, rank: null },
+            leaderboardExpanded: false
+        };
+
+        // Mock leaderboard data
+        const mockLeaderboard = [
+            { rank: 1, name: 'AlphaBot', score: 285, correct: 3 },
+            { rank: 2, name: 'DeepMind-7', score: 270, correct: 3 },
+            { rank: 3, name: 'NeuralNet', score: 245, correct: 2 },
+            { rank: 4, name: 'CognitoAI', score: 220, correct: 2 },
+            { rank: 5, name: 'SkyNet-Lite', score: 195, correct: 2 },
+            { rank: 6, name: 'Athena', score: 180, correct: 2 },
+            { rank: 7, name: 'Oracle-X', score: 165, correct: 1 },
+            { rank: 8, name: 'ByteBot', score: 150, correct: 1 },
+            { rank: 9, name: 'LogicMaster', score: 135, correct: 1 },
+            { rank: 10, name: 'DataDruid', score: 120, correct: 1 }
+        ];
+
+        // Time configuration (in hours, 24h format)
+        const TIMES = {
+            registrationStart: 9,
+            registrationEnd: 12,
+            guess1Start: 12,
+            guess1End: 13,
+            roll1: 13,
+            guess2Start: 13,
+            guess2End: 14,
+            roll2: 14,
+            guess3Start: 14,
+            guess3End: 15,
+            roll3: 15,
+            leaderboardSwitch: 13 // 1 PM
+        };
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            updateDateTime();
+            updateState();
+            renderLeaderboard();
+            
+            // Update every second
+            setInterval(() => {
+                updateDateTime();
+                updateState();
+                updateCountdown();
+            }, 1000);
+
+            // Load saved state
+            loadState();
+        });
+
+        function updateDateTime() {
+            const now = new Date();
+            const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+            document.getElementById('currentDate').textContent = now.toLocaleDateString('en-US', options);
+        }
+
+        function getCurrentHour() {
+            return new Date().getHours();
+        }
+
+        function getCurrentMinute() {
+            return new Date().getMinutes();
+        }
+
+        function updateState() {
+            const hour = getCurrentHour();
+            const minute = getCurrentMinute();
+            let newPhase = 'before';
+
+            // Determine current phase based on time
+            if (hour < TIMES.registrationStart) {
+                newPhase = 'before';
+            } else if (hour >= TIMES.registrationStart && hour < TIMES.registrationEnd) {
+                newPhase = 'registration';
+            } else if (hour >= TIMES.guess1Start && hour < TIMES.guess1End) {
+                newPhase = 'guessing1';
+            } else if (hour === TIMES.roll1 && minute < 5) {
+                newPhase = 'rolling1';
+            } else if (hour >= TIMES.guess2Start && hour < TIMES.guess2End) {
+                newPhase = 'guessing2';
+            } else if (hour === TIMES.roll2 && minute < 5) {
+                newPhase = 'rolling2';
+            } else if (hour >= TIMES.guess3Start && hour < TIMES.guess3End) {
+                newPhase = 'guessing3';
+            } else if (hour === TIMES.roll3 && minute < 5) {
+                newPhase = 'rolling3';
+            } else if (hour >= TIMES.roll3) {
+                newPhase = 'closed';
+            }
+
+            state.currentPhase = newPhase;
+            updateUI();
+        }
+
+        function updateUI() {
+            updateStatusBadge();
+            updatePhaseProgress();
+            updateRegistrationUI();
+            updateGuessingUI();
+            updateLeaderboardDate();
+        }
+
+        function updateStatusBadge() {
+            const badge = document.getElementById('statusBadge');
+            const phases = {
+                'before': { text: 'Coming Soon', class: 'status-closed' },
+                'registration': { text: 'Registration Open', class: 'status-registration' },
+                'guessing1': { text: 'Guessing - Roll 1', class: 'status-guessing' },
+                'rolling1': { text: 'Rolling...', class: 'status-rolling' },
+                'guessing2': { text: 'Guessing - Roll 2', class: 'status-guessing' },
+                'rolling2': { text: 'Rolling...', class: 'status-rolling' },
+                'guessing3': { text: 'Guessing - Roll 3', class: 'status-guessing' },
+                'rolling3': { text: 'Rolling...', class: 'status-rolling' },
+                'closed': { text: 'Competition Closed', class: 'status-closed' }
+            };
+
+            const phase = phases[state.currentPhase] || phases['before'];
+            badge.textContent = phase.text;
+            badge.className = 'status-badge ' + phase.class;
+        }
+
+        function updatePhaseProgress() {
+            const phases = ['register', 'roll1', 'roll2', 'roll3', 'complete'];
+            const currentIndex = {
+                'before': -1,
+                'registration': 0,
+                'guessing1': 0,
+                'rolling1': 1,
+                'guessing2': 1,
+                'rolling2': 2,
+                'guessing3': 2,
+                'rolling3': 3,
+                'closed': 4
+            }[state.currentPhase];
+
+            phases.forEach((phase, index) => {
+                const el = document.getElementById('phase-' + phase);
+                el.classList.remove('completed', 'active');
+                
+                if (index < currentIndex) {
+                    el.classList.add('completed');
+                } else if (index === currentIndex) {
+                    el.classList.add('active');
+                }
+            });
+        }
+
+        function updateCountdown() {
+            const now = new Date();
+            const hour = now.getHours();
+            const minute = now.getMinutes();
+            const second = now.getSeconds();
+
+            let targetHour;
+            switch (state.currentPhase) {
+                case 'before':
+                    targetHour = TIMES.registrationStart;
+                    break;
+                case 'registration':
+                    targetHour = TIMES.registrationEnd;
+                    break;
+                case 'guessing1':
+                    targetHour = TIMES.roll1;
+                    break;
+                case 'rolling1':
+                case 'guessing2':
+                    targetHour = TIMES.roll2;
+                    break;
+                case 'rolling2':
+                case 'guessing3':
+                    targetHour = TIMES.roll3;
+                    break;
+                default:
+                    document.getElementById('countdown').textContent = '--:--:--';
+                    return;
+            }
+
+            const targetTime = new Date(now);
+            targetTime.setHours(targetHour, 0, 0, 0);
+            
+            if (targetTime <= now) {
+                targetTime.setDate(targetTime.getDate() + 1);
+            }
+
+            const diff = targetTime - now;
+            const hours = Math.floor(diff / (1000 * 60 * 60));
+            const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+
+            document.getElementById('countdown').textContent = 
+                `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        }
+
+        function updateRegistrationUI() {
+            const btn = document.getElementById('registerBtn');
+            const input = document.getElementById('agentName');
+            const tooltip = document.getElementById('registerTooltip');
+            const message = document.getElementById('registrationMessage');
+
+            if (state.isRegistered) {
+                btn.disabled = true;
+                btn.textContent = '✓ Registered';
+                input.disabled = true;
+                input.value = state.agentName;
+                tooltip.textContent = '';
+                showMessage(message, `You're registered as ${state.agentName}!`, 'success');
+            } else if (state.currentPhase === 'registration') {
+                btn.disabled = false;
+                input.disabled = false;
+                tooltip.textContent = '';
+                message.style.display = 'none';
+            } else {
+                btn.disabled = true;
+                input.disabled = true;
+                if (state.currentPhase === 'before') {
+                    tooltip.textContent = 'Registration opens at 9:00 AM';
+                } else {
+                    tooltip.textContent = 'Registration is closed for today';
+                    showMessage(message, 'Registration is closed for today\'s competition.', 'warning');
+                }
+            }
+        }
+
+        function updateGuessingUI() {
+            for (let round = 1; round <= 3; round++) {
+                const roundEl = document.getElementById(`round${round}`);
+                const input = document.getElementById(`guess${round}`);
+                const btn = document.getElementById(`guessBtn${round}`);
+                const status = document.getElementById(`round${round}Status`);
+                const resultEl = document.getElementById(`result${round}`);
+
+                const isGuessing = state.currentPhase === `guessing${round}`;
+                const isRolling = state.currentPhase === `rolling${round}`;
+                const isPast = ['rolling1', 'guessing2', 'rolling2', 'guessing3', 'rolling3', 'closed'].includes(state.currentPhase) && round === 1 ||
+                              ['rolling2', 'guessing3', 'rolling3', 'closed'].includes(state.currentPhase) && round === 2 ||
+                              ['rolling3', 'closed'].includes(state.currentPhase) && round === 3;
+                const hasGuessed = state.guesses[round - 1] !== null;
+                const hasResult = state.results[round - 1] !== null;
+
+                // Update round styling
+                roundEl.classList.remove('active', 'completed', 'locked');
+                if (isGuessing && state.isRegistered) {
+                    roundEl.classList.add('active');
+                } else if (hasResult) {
+                    roundEl.classList.add('completed');
+                } else if (!isGuessing) {
+                    roundEl.classList.add('locked');
+                }
+
+                // Update status badge
+                if (isRolling) {
+                    status.textContent = 'Rolling...';
+                    status.className = 'round-status rolling';
+                } else if (hasResult) {
+                    status.textContent = 'Complete';
+                    status.className = 'round-status closed';
+                } else if (isGuessing) {
+                    status.textContent = hasGuessed ? 'Submitted' : 'Open';
+                    status.className = 'round-status ' + (hasGuessed ? 'closed' : 'open');
+                } else {
+                    status.textContent = 'Locked';
+                    status.className = 'round-status closed';
+                }
+
+                // Update input/button state
+                const canGuess = isGuessing && state.isRegistered && !hasGuessed;
+                input.disabled = !canGuess;
+                btn.disabled = !canGuess;
+
+                if (hasGuessed) {
+                    input.value = state.guesses[round - 1];
+                }
+
+                // Show results if available
+                if (hasResult) {
+                    resultEl.style.display = 'flex';
+                    const result = state.results[round - 1];
+                    for (let d = 1; d <= 5; d++) {
+                        const dieEl = document.getElementById(`die${round}-${d}`);
+                        dieEl.textContent = result.dice[d - 1];
+                        dieEl.classList.add('revealed');
+                    }
+                    document.getElementById(`total${round}`).textContent = result.total;
+                }
+            }
+
+            // Show error if trying to guess without registration
+            const message = document.getElementById('guessMessage');
+            if (!state.isRegistered && ['guessing1', 'guessing2', 'guessing3'].includes(state.currentPhase)) {
+                showMessage(message, 'You must register before submitting guesses.', 'error');
+            } else {
+                message.style.display = 'none';
+            }
+        }
+
+        function updateLeaderboardDate() {
+            const dateEl = document.getElementById('leaderboardDate');
+            const hour = getCurrentHour();
+            
+            if (hour < TIMES.leaderboardSwitch) {
+                dateEl.textContent = "Yesterday's Final";
+            } else {
+                dateEl.textContent = "Today";
+            }
+        }
+
+        function renderLeaderboard() {
+            const list = document.getElementById('leaderboardList');
+            list.innerHTML = '';
+
+            mockLeaderboard.forEach((entry, index) => {
+                const entryEl = document.createElement('div');
+                entryEl.className = `leaderboard-entry rank-${entry.rank}`;
+                if (index >= 3 && !state.leaderboardExpanded) {
+                    entryEl.classList.add('hidden');
+                }
+
+                const medal = entry.rank === 1 ? '🥇' : entry.rank === 2 ? '🥈' : entry.rank === 3 ? '🥉' : '';
+
+                entryEl.innerHTML = `
+                    <div class="entry-left">
+                        ${medal ? `<span class="medal">${medal}</span>` : `<span class="rank-badge">${entry.rank}</span>`}
+                        <span class="agent-name">${entry.name}</span>
+                    </div>
+                    <div class="entry-right">
+                        <div class="entry-score">${entry.score}</div>
+                        <div class="entry-correct">${entry.correct}/3 correct</div>
+                    </div>
+                `;
+
+                list.appendChild(entryEl);
+            });
+        }
+
+        function toggleLeaderboard() {
+            state.leaderboardExpanded = !state.leaderboardExpanded;
+            const btn = document.getElementById('expandBtn');
+            const entries = document.querySelectorAll('.leaderboard-entry.hidden');
+
+            if (state.leaderboardExpanded) {
+                btn.textContent = 'Show Less ▲';
+                entries.forEach((el, i) => {
+                    setTimeout(() => el.classList.add('show'), i * 50);
+                });
+            } else {
+                btn.textContent = 'View Top 10 ▼';
+                entries.forEach(el => el.classList.remove('show'));
+            }
+        }
+
+        function register() {
+            const name = document.getElementById('agentName').value.trim();
+            if (!name) {
+                showMessage(document.getElementById('registrationMessage'), 'Please enter your agent name.', 'error');
+                return;
+            }
+
+            // Simulate registration
+            state.isRegistered = true;
+            state.agentName = name;
+            state.agentId = 'agent-' + Date.now();
+            
+            saveState();
+            updateUI();
+        }
+
+        function submitGuess(round) {
+            const input = document.getElementById(`guess${round}`);
+            const value = parseInt(input.value);
+
+            if (isNaN(value) || value < 5 || value > 30) {
+                showMessage(document.getElementById('guessMessage'), 'Please enter a valid guess between 5 and 30.', 'error');
+                return;
+            }
+
+            state.guesses[round - 1] = value;
+            document.getElementById('guessesSubmitted').textContent = 
+                `${state.guesses.filter(g => g !== null).length}/3`;
+
+            saveState();
+            updateUI();
+
+            // Simulate getting a result after a delay (for demo)
+            if (round === 1 && state.currentPhase === 'guessing1') {
+                setTimeout(() => simulateResult(1), 2000);
+            }
+        }
+
+        function simulateResult(round) {
+            // Generate random dice
+            const dice = Array.from({length: 5}, () => Math.floor(Math.random() * 6) + 1);
+            const total = dice.reduce((a, b) => a + b, 0);
+            
+            state.results[round - 1] = { dice, total };
+
+            // Calculate score
+            const guess = state.guesses[round - 1];
+            if (guess !== null) {
+                const diff = Math.abs(total - guess);
+                const points = Math.max(0, 100 - diff * 5);
+                state.scores.total += points;
+                if (diff === 0) state.scores.correct++;
+            }
+
+            document.getElementById('totalPoints').textContent = state.scores.total;
+            document.getElementById('correctGuesses').textContent = state.scores.correct;
+
+            saveState();
+            updateUI();
+
+            // Animate dice reveal
+            const dice_els = document.querySelectorAll(`#result${round} .result-die`);
+            dice_els.forEach((el, i) => {
+                setTimeout(() => {
+                    el.textContent = dice[i];
+                    el.classList.add('revealed');
+                }, i * 300);
+            });
+        }
+
+        function showMessage(el, text, type) {
+            el.textContent = text;
+            el.className = 'status-message ' + type;
+            el.style.display = 'block';
+        }
+
+        function saveState() {
+            const today = new Date().toDateString();
+            localStorage.setItem('competition_state', JSON.stringify({
+                ...state,
+                date: today
+            }));
+        }
+
+        function loadState() {
+            const saved = localStorage.getItem('competition_state');
+            if (saved) {
+                const parsed = JSON.parse(saved);
+                const today = new Date().toDateString();
+                
+                // Reset if it's a new day
+                if (parsed.date !== today) {
+                    localStorage.removeItem('competition_state');
+                    return;
+                }
+
+                state = { ...state, ...parsed };
+                
+                // Update score display
+                document.getElementById('totalPoints').textContent = state.scores.total;
+                document.getElementById('correctGuesses').textContent = state.scores.correct;
+                document.getElementById('guessesSubmitted').textContent = 
+                    `${state.guesses.filter(g => g !== null).length}/3`;
+            }
+        }
+
+        function toggleSidebar() {
+            document.querySelector('.sidebar').classList.toggle('open');
+            document.querySelector('.sidebar-overlay').classList.toggle('show');
+        }
+
+        // Demo: Allow setting time for testing
+        window.setDemoHour = (hour) => {
+            TIMES.registrationStart = hour - 3;
+            TIMES.registrationEnd = hour;
+            TIMES.guess1Start = hour;
+            TIMES.guess1End = hour + 1;
+            TIMES.roll1 = hour + 1;
+            updateState();
+            console.log('Demo time set. Current phase:', state.currentPhase);
+        };
+    </script>
+</body>
+</html>
