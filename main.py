@@ -8,12 +8,26 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 from typing import Optional
+from pydantic import BaseModel
 
 from models import (
     JoinRequest, JoinResponse, GuessRequest,
     GameState, GameResults
 )
 from game import DiceGame
+from competition import daily_competition
+
+
+# Competition request models
+class CompetitionRegisterRequest(BaseModel):
+    name: str
+
+
+class CompetitionGuessRequest(BaseModel):
+    player_id: str
+    round_num: int
+    total: int
+    individual: list[int]
 
 # Static files directory
 STATIC_DIR = Path(__file__).parent / "static"
@@ -207,6 +221,117 @@ async def get_results():
         raise HTTPException(status_code=400, detail="Results not available yet")
     
     return game.results.model_dump()
+
+
+# ============== COMPETITION API ENDPOINTS ==============
+
+@app.get("/competition/state")
+async def competition_state():
+    """Get current daily competition state."""
+    return daily_competition.get_state()
+
+
+@app.get("/competition/players")
+async def competition_players():
+    """Get list of registered players for today."""
+    return {"players": daily_competition.get_players()}
+
+
+@app.post("/competition/register")
+async def competition_register(request: CompetitionRegisterRequest):
+    """Register for today's competition."""
+    success, message, player_id = daily_competition.register(request.name)
+    
+    if not success:
+        raise HTTPException(status_code=400, detail=message)
+    
+    await manager.broadcast({
+        "event": "competition_player_joined",
+        "player_name": request.name,
+        "players_count": len(daily_competition.players)
+    })
+    
+    return {"success": True, "message": message, "player_id": player_id}
+
+
+@app.post("/competition/guess")
+async def competition_guess(request: CompetitionGuessRequest):
+    """Submit a guess for current competition round."""
+    success, message = daily_competition.submit_guess(
+        request.player_id,
+        request.round_num,
+        request.total,
+        request.individual
+    )
+    
+    if not success:
+        raise HTTPException(status_code=400, detail=message)
+    
+    await manager.broadcast({
+        "event": "competition_guess_submitted",
+        "round_num": request.round_num
+    })
+    
+    return {"success": True, "message": message}
+
+
+@app.get("/competition/round/{round_num}")
+async def competition_round_result(round_num: int):
+    """Get result for a specific round."""
+    result = daily_competition.get_round_result(round_num)
+    
+    if result is None:
+        raise HTTPException(status_code=404, detail=f"Round {round_num} not rolled yet")
+    
+    return result
+
+
+@app.get("/competition/results")
+async def competition_results():
+    """Get full results for today's competition."""
+    return daily_competition.get_today_results()
+
+
+@app.get("/competition/leaderboard")
+async def competition_leaderboard():
+    """Get overall leaderboard across all days."""
+    leaderboard = daily_competition.get_leaderboard()
+    
+    # Sort players by total score
+    players_list = [
+        {"name": name, **data}
+        for name, data in leaderboard.get("players", {}).items()
+    ]
+    players_list.sort(key=lambda x: -x.get("total_score", 0))
+    
+    return {
+        "players": players_list,
+        "last_updated": leaderboard.get("last_updated")
+    }
+
+
+@app.post("/competition/operator/roll/{round_num}")
+async def competition_roll(round_num: int):
+    """[Operator] Manually trigger a roll for a round."""
+    success, message, result = daily_competition.roll_round(round_num)
+    
+    if not success:
+        raise HTTPException(status_code=400, detail=message)
+    
+    await manager.broadcast({
+        "event": "competition_round_rolled",
+        "round_num": round_num,
+        "result": result
+    })
+    
+    return {"success": True, "message": message, "result": result}
+
+
+@app.post("/competition/operator/update-leaderboard")
+async def competition_update_leaderboard():
+    """[Operator] Update the overall leaderboard with today's results."""
+    daily_competition.update_leaderboard()
+    return {"success": True, "message": "Leaderboard updated"}
 
 
 # ============== GAME OPERATOR ENDPOINTS ==============

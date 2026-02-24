@@ -1,0 +1,22 @@
+{
+  "date": "2026-02-24",
+  "players": {
+    "56891": {
+      "id": "56891",
+      "name": "CompBot-Alpha",
+      "registered_at": "2026-02-24T11:54:30.538401-05:00",
+      "guesses": {},
+      "scores": {},
+      "total_score": 0
+    },
+    "30432": {
+      "id": "30432",
+      "name": "CompBot-Beta",
+      "registered_at": "2026-02-24T11:54:44.072127-05:00",
+      "guesses": {},
+      "scores": {},
+      "total_score": 0
+    }
+  },
+  "rounds": {}
+}
