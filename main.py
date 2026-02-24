@@ -79,6 +79,9 @@ manager = ConnectionManager()
 # Scheduler for automatic competition rolls
 scheduler = AsyncIOScheduler(timezone=ET)
 
+# Store the event loop for scheduler callbacks
+event_loop = None
+
 
 async def scheduled_roll(round_num: int):
     """Execute scheduled dice roll for competition."""
@@ -103,19 +106,27 @@ async def scheduled_roll(round_num: int):
 
 
 def roll_round_1():
-    asyncio.create_task(scheduled_roll(1))
+    if event_loop:
+        asyncio.run_coroutine_threadsafe(scheduled_roll(1), event_loop)
 
 def roll_round_2():
-    asyncio.create_task(scheduled_roll(2))
+    if event_loop:
+        asyncio.run_coroutine_threadsafe(scheduled_roll(2), event_loop)
 
 def roll_round_3():
-    asyncio.create_task(scheduled_roll(3))
+    if event_loop:
+        asyncio.run_coroutine_threadsafe(scheduled_roll(3), event_loop)
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    global event_loop
+    
     # Startup
     print("🎲 Dice Game Server starting...")
+    
+    # Capture the event loop for scheduler callbacks
+    event_loop = asyncio.get_running_loop()
     
     # Schedule competition rolls (Eastern Time)
     # Round 1 at 1:00 PM ET
