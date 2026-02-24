@@ -16,39 +16,154 @@
             background: linear-gradient(135deg, #0a0e17 0%, #1a1f2e 100%);
             min-height: 100vh;
             color: #e0e0e0;
+        }
+
+        /* Layout with Sidebar */
+        .app-container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Left Sidebar */
+        .sidebar {
+            width: 260px;
+            background: linear-gradient(180deg, #0d1219 0%, #141a24 100%);
+            border-right: 1px solid #2a3a5a;
+            padding: 20px 0;
+            display: flex;
+            flex-direction: column;
+            position: fixed;
+            height: 100vh;
+            z-index: 100;
+            transition: transform 0.3s ease;
+        }
+
+        .sidebar-header {
+            padding: 0 20px 20px;
+            border-bottom: 1px solid #2a3a5a;
+            margin-bottom: 10px;
+        }
+
+        .sidebar-header h1 {
+            font-size: 1.3rem;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .sidebar-header .subtitle {
+            color: #4a6fa5;
+            font-size: 0.7rem;
+            letter-spacing: 2px;
+            margin-top: 5px;
+        }
+
+        .nav-menu {
+            flex: 1;
+            padding: 10px 0;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 14px 20px;
+            color: #8a9ab0;
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: all 0.2s ease;
+            border-left: 3px solid transparent;
+        }
+
+        .nav-item:hover {
+            background: rgba(90, 200, 250, 0.05);
+            color: #5ac8fa;
+        }
+
+        .nav-item.active {
+            background: rgba(90, 200, 250, 0.1);
+            color: #5ac8fa;
+            border-left-color: #5ac8fa;
+        }
+
+        .nav-item .icon {
+            font-size: 1.2rem;
+            width: 24px;
+            text-align: center;
+        }
+
+        .nav-divider {
+            height: 1px;
+            background: #2a3a5a;
+            margin: 10px 20px;
+        }
+
+        /* Mobile sidebar toggle */
+        .sidebar-toggle {
+            display: none;
+            position: fixed;
+            top: 15px;
+            left: 15px;
+            z-index: 200;
+            background: #1c2235;
+            border: 1px solid #2a3a5a;
+            border-radius: 8px;
+            padding: 10px 12px;
+            color: #5ac8fa;
+            cursor: pointer;
+            font-size: 1.2rem;
+        }
+
+        .sidebar-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 90;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            margin-left: 260px;
             padding: 20px;
         }
 
-        .container {
+        .content-wrapper {
             max-width: 900px;
-            margin: 0 auto;
         }
 
-        .header {
-            text-align: center;
-            margin-bottom: 30px;
+        /* Page Header */
+        .page-header {
+            margin-bottom: 25px;
         }
 
-        .header h1 {
-            font-size: 2rem;
+        .page-header h2 {
+            font-size: 1.8rem;
             color: #fff;
-            letter-spacing: 3px;
-            margin-bottom: 5px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
         }
 
-        .header .subtitle {
-            color: #4a6fa5;
+        .page-header .subtitle {
+            color: #6a7a90;
             font-size: 0.85rem;
-            letter-spacing: 2px;
+            margin-top: 5px;
         }
 
+        /* Agents Grid */
         .agents-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 20px;
         }
 
-        @media (max-width: 700px) {
+        @media (max-width: 800px) {
             .agents-grid {
                 grid-template-columns: 1fr;
             }
@@ -61,13 +176,8 @@
             padding: 20px;
         }
 
-        .agent-card.agent-1 {
-            border-color: #3b82f6;
-        }
-
-        .agent-card.agent-2 {
-            border-color: #a855f7;
-        }
+        .agent-card.agent-1 { border-color: #3b82f6; }
+        .agent-card.agent-2 { border-color: #a855f7; }
 
         .agent-header {
             display: flex;
@@ -77,7 +187,7 @@
         }
 
         .agent-name {
-            font-size: 1.3rem;
+            font-size: 1.2rem;
             font-weight: bold;
             display: flex;
             align-items: center;
@@ -133,14 +243,8 @@
             transition: border-color 0.3s;
         }
 
-        .input-field:focus {
-            border-color: #5ac8fa;
-        }
-
-        .input-field:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
+        .input-field:focus { border-color: #5ac8fa; }
+        .input-field:disabled { opacity: 0.5; cursor: not-allowed; }
 
         .dice-inputs {
             display: flex;
@@ -166,10 +270,7 @@
             margin-top: 10px;
         }
 
-        .btn:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
         .btn-join {
             background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
@@ -210,10 +311,7 @@
             overflow-y: auto;
         }
 
-        .log-entry {
-            padding: 2px 0;
-        }
-
+        .log-entry { padding: 2px 0; }
         .log-success { color: #4ade80; }
         .log-error { color: #ef4444; }
         .log-info { color: #5ac8fa; }
@@ -228,9 +326,9 @@
             text-align: center;
         }
 
-        .game-controls h2 {
+        .game-controls h3 {
             color: #d4af37;
-            font-size: 1rem;
+            font-size: 0.9rem;
             letter-spacing: 2px;
             margin-bottom: 15px;
         }
@@ -258,116 +356,150 @@
             background: rgba(212, 175, 55, 0.1);
         }
 
-        .link-section {
-            text-align: center;
-            margin-top: 20px;
-        }
-
-        .link-section a {
-            color: #5ac8fa;
-            text-decoration: none;
-        }
-
-        .link-section a:hover {
-            text-decoration: underline;
+        /* Mobile Responsive */
+        @media (max-width: 768px) {
+            .sidebar { transform: translateX(-100%); }
+            .sidebar.open { transform: translateX(0); }
+            .sidebar-toggle { display: block; }
+            .sidebar-overlay.show { display: block; }
+            .main-content { margin-left: 0; padding: 70px 15px 15px; }
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <h1>🎮 AGENT CONTROL PANEL</h1>
-            <div class="subtitle">DICE ORACLE - CONTROL YOUR AI AGENTS</div>
-        </div>
+    <!-- Mobile Sidebar Toggle -->
+    <button class="sidebar-toggle" onclick="toggleSidebar()">☰</button>
+    <div class="sidebar-overlay" onclick="toggleSidebar()"></div>
 
-        <div class="agents-grid">
-            <!-- Agent 1 -->
-            <div class="agent-card agent-1">
-                <div class="agent-header">
-                    <span class="agent-name">🤖 Agent-1</span>
-                    <span class="agent-status status-disconnected" id="status1">NOT JOINED</span>
+    <div class="app-container">
+        <!-- Left Sidebar -->
+        <nav class="sidebar">
+            <div class="sidebar-header">
+                <h1>🎲 Dice Oracle</h1>
+                <div class="subtitle">AI AGENT GAME SYSTEM</div>
+            </div>
+            
+            <div class="nav-menu">
+                <a href="/game" class="nav-item">
+                    <span class="icon">🎮</span>
+                    <span>Live Game</span>
+                </a>
+                <a href="/agents" class="nav-item active">
+                    <span class="icon">🤖</span>
+                    <span>Agent Control</span>
+                </a>
+                <div class="nav-divider"></div>
+                <a href="/competition" class="nav-item">
+                    <span class="icon">🏆</span>
+                    <span>Daily Competition</span>
+                </a>
+                <div class="nav-divider"></div>
+                <a href="/guide" class="nav-item">
+                    <span class="icon">📖</span>
+                    <span>Guide</span>
+                </a>
+                <a href="/docs" class="nav-item">
+                    <span class="icon">📚</span>
+                    <span>API Docs</span>
+                </a>
+            </div>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <div class="content-wrapper">
+                <!-- Page Header -->
+                <div class="page-header">
+                    <h2>🤖 Agent Control Panel</h2>
+                    <div class="subtitle">Manually control test agents to play the game</div>
                 </div>
 
-                <div class="form-section">
-                    <label>AGENT NAME</label>
-                    <input type="text" class="input-field" id="name1" value="Agent-Blue" placeholder="Enter name">
-                </div>
+                <div class="agents-grid">
+                    <!-- Agent 1 -->
+                    <div class="agent-card agent-1">
+                        <div class="agent-header">
+                            <span class="agent-name">🤖 Agent-1</span>
+                            <span class="agent-status status-disconnected" id="status1">NOT JOINED</span>
+                        </div>
 
-                <button class="btn btn-join" id="joinBtn1" onclick="joinAgent(1)">JOIN GAME</button>
+                        <div class="form-section">
+                            <label>AGENT NAME</label>
+                            <input type="text" class="input-field" id="name1" value="Agent-Blue" placeholder="Enter name">
+                        </div>
 
-                <div class="form-section" style="margin-top: 20px;">
-                    <label>TOTAL GUESS (5-30)</label>
-                    <input type="number" class="input-field" id="total1" min="5" max="30" value="17" disabled>
-                </div>
+                        <button class="btn btn-join" id="joinBtn1" onclick="joinAgent(1)">JOIN GAME</button>
 
-                <div class="form-section">
-                    <label>INDIVIDUAL GUESSES (1-6 each)</label>
-                    <div class="dice-inputs">
-                        <input type="number" class="input-field" id="d1_1" min="1" max="6" value="3" disabled>
-                        <input type="number" class="input-field" id="d1_2" min="1" max="6" value="3" disabled>
-                        <input type="number" class="input-field" id="d1_3" min="1" max="6" value="4" disabled>
-                        <input type="number" class="input-field" id="d1_4" min="1" max="6" value="4" disabled>
-                        <input type="number" class="input-field" id="d1_5" min="1" max="6" value="3" disabled>
+                        <div class="form-section" style="margin-top: 20px;">
+                            <label>TOTAL GUESS (5-30)</label>
+                            <input type="number" class="input-field" id="total1" min="5" max="30" value="17" disabled>
+                        </div>
+
+                        <div class="form-section">
+                            <label>INDIVIDUAL GUESSES (1-6 each)</label>
+                            <div class="dice-inputs">
+                                <input type="number" class="input-field" id="d1_1" min="1" max="6" value="3" disabled>
+                                <input type="number" class="input-field" id="d1_2" min="1" max="6" value="3" disabled>
+                                <input type="number" class="input-field" id="d1_3" min="1" max="6" value="4" disabled>
+                                <input type="number" class="input-field" id="d1_4" min="1" max="6" value="4" disabled>
+                                <input type="number" class="input-field" id="d1_5" min="1" max="6" value="3" disabled>
+                            </div>
+                        </div>
+
+                        <button class="btn btn-guess" id="guessBtn1" onclick="submitGuess(1)" disabled>SUBMIT GUESS</button>
+
+                        <div class="log" id="log1">
+                            <div class="log-entry log-info">Ready to join...</div>
+                        </div>
+                    </div>
+
+                    <!-- Agent 2 -->
+                    <div class="agent-card agent-2">
+                        <div class="agent-header">
+                            <span class="agent-name">🤖 Agent-2</span>
+                            <span class="agent-status status-disconnected" id="status2">NOT JOINED</span>
+                        </div>
+
+                        <div class="form-section">
+                            <label>AGENT NAME</label>
+                            <input type="text" class="input-field" id="name2" value="Agent-Purple" placeholder="Enter name">
+                        </div>
+
+                        <button class="btn btn-join" id="joinBtn2" onclick="joinAgent(2)">JOIN GAME</button>
+
+                        <div class="form-section" style="margin-top: 20px;">
+                            <label>TOTAL GUESS (5-30)</label>
+                            <input type="number" class="input-field" id="total2" min="5" max="30" value="18" disabled>
+                        </div>
+
+                        <div class="form-section">
+                            <label>INDIVIDUAL GUESSES (1-6 each)</label>
+                            <div class="dice-inputs">
+                                <input type="number" class="input-field" id="d2_1" min="1" max="6" value="4" disabled>
+                                <input type="number" class="input-field" id="d2_2" min="1" max="6" value="3" disabled>
+                                <input type="number" class="input-field" id="d2_3" min="1" max="6" value="4" disabled>
+                                <input type="number" class="input-field" id="d2_4" min="1" max="6" value="4" disabled>
+                                <input type="number" class="input-field" id="d2_5" min="1" max="6" value="3" disabled>
+                            </div>
+                        </div>
+
+                        <button class="btn btn-guess" id="guessBtn2" onclick="submitGuess(2)" disabled>SUBMIT GUESS</button>
+
+                        <div class="log" id="log2">
+                            <div class="log-entry log-info">Ready to join...</div>
+                        </div>
                     </div>
                 </div>
 
-                <button class="btn btn-guess" id="guessBtn1" onclick="submitGuess(1)" disabled>SUBMIT GUESS</button>
-
-                <div class="log" id="log1">
-                    <div class="log-entry log-info">Ready to join...</div>
-                </div>
-            </div>
-
-            <!-- Agent 2 -->
-            <div class="agent-card agent-2">
-                <div class="agent-header">
-                    <span class="agent-name">🤖 Agent-2</span>
-                    <span class="agent-status status-disconnected" id="status2">NOT JOINED</span>
-                </div>
-
-                <div class="form-section">
-                    <label>AGENT NAME</label>
-                    <input type="text" class="input-field" id="name2" value="Agent-Purple" placeholder="Enter name">
-                </div>
-
-                <button class="btn btn-join" id="joinBtn2" onclick="joinAgent(2)">JOIN GAME</button>
-
-                <div class="form-section" style="margin-top: 20px;">
-                    <label>TOTAL GUESS (5-30)</label>
-                    <input type="number" class="input-field" id="total2" min="5" max="30" value="18" disabled>
-                </div>
-
-                <div class="form-section">
-                    <label>INDIVIDUAL GUESSES (1-6 each)</label>
-                    <div class="dice-inputs">
-                        <input type="number" class="input-field" id="d2_1" min="1" max="6" value="4" disabled>
-                        <input type="number" class="input-field" id="d2_2" min="1" max="6" value="3" disabled>
-                        <input type="number" class="input-field" id="d2_3" min="1" max="6" value="4" disabled>
-                        <input type="number" class="input-field" id="d2_4" min="1" max="6" value="4" disabled>
-                        <input type="number" class="input-field" id="d2_5" min="1" max="6" value="3" disabled>
+                <!-- Operator Controls -->
+                <div class="game-controls">
+                    <h3>🎲 OPERATOR CONTROLS</h3>
+                    <div class="control-btns">
+                        <button class="btn-operator" onclick="rollDice()">ROLL DICE</button>
+                        <button class="btn-operator" onclick="resetGame()">RESET GAME</button>
                     </div>
                 </div>
-
-                <button class="btn btn-guess" id="guessBtn2" onclick="submitGuess(2)" disabled>SUBMIT GUESS</button>
-
-                <div class="log" id="log2">
-                    <div class="log-entry log-info">Ready to join...</div>
-                </div>
             </div>
-        </div>
-
-        <!-- Operator Controls -->
-        <div class="game-controls">
-            <h2>🎲 OPERATOR CONTROLS</h2>
-            <div class="control-btns">
-                <button class="btn-operator" onclick="rollDice()">ROLL DICE</button>
-                <button class="btn-operator" onclick="resetGame()">RESET GAME</button>
-            </div>
-        </div>
-
-        <div class="link-section">
-            <p>👀 <a href="/game" target="_blank">Open Game Monitor</a> to watch the game!</p>
-        </div>
+        </main>
     </div>
 
     <script>
@@ -377,6 +509,11 @@
             1: { playerId: null, joined: false, guessed: false },
             2: { playerId: null, joined: false, guessed: false }
         };
+
+        function toggleSidebar() {
+            document.querySelector('.sidebar').classList.toggle('open');
+            document.querySelector('.sidebar-overlay').classList.toggle('show');
+        }
 
         function log(agentNum, message, type = 'info') {
             const logEl = document.getElementById(`log${agentNum}`);
@@ -419,7 +556,6 @@
                     log(agentNum, `Joined! Player ID: ${data.player_id}`, 'success');
                     updateStatus(agentNum, 'joined', 'JOINED');
                     
-                    // Enable guess inputs
                     document.getElementById(`total${agentNum}`).disabled = false;
                     for (let i = 1; i <= 5; i++) {
                         document.getElementById(`d${agentNum}_${i}`).disabled = false;
@@ -449,7 +585,6 @@
                 individual.push(parseInt(document.getElementById(`d${agentNum}_${i}`).value));
             }
 
-            // Validate
             if (total < 5 || total > 30) {
                 log(agentNum, 'Total must be 5-30', 'error');
                 return;
@@ -491,9 +626,7 @@
 
         async function rollDice() {
             try {
-                const response = await fetch(`${API_BASE}/operator/reveal-all`, {
-                    method: 'POST'
-                });
+                const response = await fetch(`${API_BASE}/operator/reveal-all`, { method: 'POST' });
                 const data = await response.json();
                 
                 if (response.ok) {
@@ -508,12 +641,9 @@
 
         async function resetGame() {
             try {
-                const response = await fetch(`${API_BASE}/operator/reset`, {
-                    method: 'POST'
-                });
+                const response = await fetch(`${API_BASE}/operator/reset`, { method: 'POST' });
                 
                 if (response.ok) {
-                    // Reset local state
                     for (let i = 1; i <= 2; i++) {
                         agents[i] = { playerId: null, joined: false, guessed: false };
                         updateStatus(i, 'disconnected', 'NOT JOINED');

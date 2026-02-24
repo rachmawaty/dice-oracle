@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dice Oracle - AI Agent Game System</title>
+    <title>Dice Oracle - Live Game</title>
     <style>
         * {
             margin: 0;
@@ -16,143 +16,182 @@
             background: linear-gradient(135deg, #0a0e17 0%, #1a1f2e 100%);
             min-height: 100vh;
             color: #e0e0e0;
-            padding: 15px;
         }
 
-        /* Main Layout */
-        .page-container {
-            max-width: 1400px;
-            margin: 0 auto;
+        /* Layout with Sidebar */
+        .app-container {
+            display: flex;
+            min-height: 100vh;
         }
 
-        .header {
-            text-align: left;
-            margin-bottom: 20px;
+        /* Left Sidebar */
+        .sidebar {
+            width: 260px;
+            background: linear-gradient(180deg, #0d1219 0%, #141a24 100%);
+            border-right: 1px solid #2a3a5a;
+            padding: 20px 0;
+            display: flex;
+            flex-direction: column;
+            position: fixed;
+            height: 100vh;
+            z-index: 100;
+            transition: transform 0.3s ease;
         }
 
-        .header h1 {
-            font-size: clamp(1.5rem, 4vw, 2.5rem);
-            font-weight: bold;
+        .sidebar-header {
+            padding: 0 20px 20px;
+            border-bottom: 1px solid #2a3a5a;
+            margin-bottom: 10px;
+        }
+
+        .sidebar-header h1 {
+            font-size: 1.3rem;
             color: #fff;
-            letter-spacing: 3px;
             display: flex;
             align-items: center;
             gap: 10px;
         }
 
-        .header h1 .dice-icon {
-            font-size: clamp(1.3rem, 3vw, 2rem);
-        }
-
-        .header .subtitle {
+        .sidebar-header .subtitle {
             color: #4a6fa5;
-            font-size: clamp(0.7rem, 1.5vw, 0.85rem);
+            font-size: 0.7rem;
             letter-spacing: 2px;
             margin-top: 5px;
         }
 
-        /* Two Column Layout */
+        .nav-menu {
+            flex: 1;
+            padding: 10px 0;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 14px 20px;
+            color: #8a9ab0;
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: all 0.2s ease;
+            border-left: 3px solid transparent;
+        }
+
+        .nav-item:hover {
+            background: rgba(90, 200, 250, 0.05);
+            color: #5ac8fa;
+        }
+
+        .nav-item.active {
+            background: rgba(90, 200, 250, 0.1);
+            color: #5ac8fa;
+            border-left-color: #5ac8fa;
+        }
+
+        .nav-item .icon {
+            font-size: 1.2rem;
+            width: 24px;
+            text-align: center;
+        }
+
+        .nav-divider {
+            height: 1px;
+            background: #2a3a5a;
+            margin: 10px 20px;
+        }
+
+        /* Mobile sidebar toggle */
+        .sidebar-toggle {
+            display: none;
+            position: fixed;
+            top: 15px;
+            left: 15px;
+            z-index: 200;
+            background: #1c2235;
+            border: 1px solid #2a3a5a;
+            border-radius: 8px;
+            padding: 10px 12px;
+            color: #5ac8fa;
+            cursor: pointer;
+            font-size: 1.2rem;
+        }
+
+        .sidebar-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 90;
+        }
+
+        /* Main Content */
         .main-content {
+            flex: 1;
+            margin-left: 260px;
+            padding: 20px;
+        }
+
+        .content-wrapper {
+            max-width: 1100px;
             display: grid;
             grid-template-columns: 1fr;
             gap: 20px;
         }
 
         @media (min-width: 900px) {
-            .main-content {
+            .content-wrapper {
                 grid-template-columns: 1fr 1fr;
-                gap: 30px;
+                gap: 25px;
             }
         }
 
-        @media (min-width: 1200px) {
-            .main-content {
-                grid-template-columns: 1.2fr 1fr;
-                gap: 40px;
-            }
+        /* Page Header */
+        .page-header {
+            grid-column: 1 / -1;
+            margin-bottom: 5px;
         }
 
-        .left-panel, .right-panel {
+        .page-header h2 {
+            font-size: 1.8rem;
+            color: #fff;
             display: flex;
-            flex-direction: column;
-            gap: 15px;
+            align-items: center;
+            gap: 12px;
         }
 
-        /* Game Board */
-        .game-board {
+        .page-header .subtitle {
+            color: #6a7a90;
+            font-size: 0.85rem;
+            margin-top: 5px;
+        }
+
+        /* Cards */
+        .card {
             background: linear-gradient(145deg, #141824 0%, #1c2235 100%);
             border: 1px solid #2a3a5a;
             border-radius: 16px;
-            padding: clamp(15px, 3vw, 25px);
+            padding: 20px;
         }
 
-        .game-board h2 {
+        .card h3 {
             color: #4a8fa5;
-            font-size: clamp(0.75rem, 1.5vw, 0.9rem);
-            letter-spacing: 3px;
+            font-size: 0.8rem;
+            letter-spacing: 2px;
             margin-bottom: 15px;
-        }
-
-        .dice-container {
-            display: flex;
-            justify-content: space-between;
-            gap: clamp(5px, 1.5vw, 12px);
-            margin-bottom: 15px;
-        }
-
-        .dice {
-            width: clamp(45px, 12vw, 75px);
-            height: clamp(45px, 12vw, 75px);
-            background: linear-gradient(145deg, #1a2030 0%, #252d42 100%);
-            border: 2px solid #3a5a8a;
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: clamp(1.2rem, 3vw, 2rem);
-            color: #7ab8d4;
-            transition: all 0.3s ease;
-        }
-
-        .dice.revealed {
-            border-color: #5ac8fa;
-            box-shadow: 0 0 15px rgba(90, 200, 250, 0.3);
-        }
-
-        .dice.rolling {
-            animation: roll 0.5s ease-in-out;
-        }
-
-        @keyframes roll {
-            0%, 100% { transform: rotate(0deg); }
-            25% { transform: rotate(-10deg); }
-            75% { transform: rotate(10deg); }
-        }
-
-        .total-display {
-            text-align: center;
-            color: #8a9ab0;
-            font-size: clamp(0.85rem, 2vw, 1rem);
-        }
-
-        .total-display .total-number {
-            color: #5ac8fa;
-            font-size: clamp(1.5rem, 4vw, 2.2rem);
-            font-weight: bold;
-        }
-
-        .total-display .total-breakdown {
-            color: #6a7a90;
-            font-size: clamp(0.75rem, 1.5vw, 0.9rem);
+            text-transform: uppercase;
         }
 
         /* Phase indicator */
         .phase-indicator {
+            grid-column: 1 / -1;
             text-align: center;
-            padding: clamp(8px, 1.5vw, 12px);
-            border-radius: 8px;
-            font-size: clamp(0.75rem, 1.5vw, 0.85rem);
+            padding: 12px;
+            border-radius: 10px;
+            font-size: 0.85rem;
             letter-spacing: 2px;
+            font-weight: 600;
         }
 
         .phase-waiting {
@@ -185,31 +224,71 @@
             50% { opacity: 0.6; }
         }
 
+        /* Dice */
+        .dice-container {
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .dice {
+            flex: 1;
+            aspect-ratio: 1;
+            max-width: 70px;
+            background: linear-gradient(145deg, #1a2030 0%, #252d42 100%);
+            border: 2px solid #3a5a8a;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+            color: #7ab8d4;
+            transition: all 0.3s ease;
+        }
+
+        .dice.revealed {
+            border-color: #5ac8fa;
+            box-shadow: 0 0 15px rgba(90, 200, 250, 0.3);
+        }
+
+        .dice.rolling {
+            animation: roll 0.5s ease-in-out;
+        }
+
+        @keyframes roll {
+            0%, 100% { transform: rotate(0deg); }
+            25% { transform: rotate(-10deg); }
+            75% { transform: rotate(10deg); }
+        }
+
+        .total-display {
+            text-align: center;
+            color: #8a9ab0;
+            font-size: 0.95rem;
+        }
+
+        .total-display .total-number {
+            color: #5ac8fa;
+            font-size: 2rem;
+            font-weight: bold;
+        }
+
+        .total-display .total-breakdown {
+            color: #6a7a90;
+            font-size: 0.85rem;
+        }
+
         /* Leaderboard */
-        .leaderboard {
-            background: linear-gradient(145deg, #141824 0%, #1c2235 100%);
-            border: 1px solid #2a3a5a;
-            border-radius: 16px;
-            padding: clamp(15px, 3vw, 20px);
-        }
-
-        .leaderboard h2 {
-            color: #4a8fa5;
-            font-size: clamp(0.75rem, 1.5vw, 0.9rem);
-            letter-spacing: 3px;
-            margin-bottom: 12px;
-        }
-
         .leaderboard-entry {
             background: linear-gradient(145deg, #0d1118 0%, #141824 100%);
             border: 1px solid #2a3a5a;
             border-radius: 10px;
-            padding: clamp(10px, 2vw, 14px) clamp(12px, 2vw, 18px);
+            padding: 12px 16px;
             margin-bottom: 8px;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            transition: all 0.3s ease;
         }
 
         .leaderboard-entry.rank-1 {
@@ -217,124 +296,93 @@
             box-shadow: 0 0 10px rgba(212, 175, 55, 0.2);
         }
 
-        .leaderboard-entry.rank-2 {
-            border-color: #c0c0c0;
-        }
-
-        .leaderboard-entry.rank-3 {
-            border-color: #cd7f32;
-        }
+        .leaderboard-entry.rank-2 { border-color: #c0c0c0; }
+        .leaderboard-entry.rank-3 { border-color: #cd7f32; }
 
         .entry-left {
             display: flex;
             align-items: center;
-            gap: clamp(8px, 1.5vw, 12px);
-            min-width: 0;
-            flex: 1;
+            gap: 12px;
         }
 
-        .medal {
-            font-size: clamp(1.1rem, 2.5vw, 1.4rem);
-            flex-shrink: 0;
-        }
+        .medal { font-size: 1.3rem; }
 
         .agent-name {
-            font-size: clamp(0.85rem, 2vw, 1rem);
-            font-weight: 500;
+            font-size: 0.95rem;
             color: #e0e0e0;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
         }
 
-        .entry-right {
-            text-align: right;
-            flex-shrink: 0;
-            margin-left: 10px;
-        }
+        .entry-right { text-align: right; }
 
         .score {
-            font-size: clamp(1.2rem, 3vw, 1.6rem);
+            font-size: 1.5rem;
             font-weight: bold;
             color: #5ac8fa;
         }
 
         .score-breakdown {
-            font-size: clamp(0.6rem, 1.2vw, 0.72rem);
+            font-size: 0.7rem;
             color: #6a7a90;
         }
 
-        /* Play Again Button */
-        .play-again-btn {
+        /* Agent Status */
+        .status-entry {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #1a2030;
+            font-size: 0.85rem;
+        }
+
+        .status-entry:last-child { border-bottom: none; }
+
+        .status-name { color: #8a9ab0; }
+        .status-info { color: #5ac8fa; }
+        .status-info .checkmark { color: #4ade80; }
+
+        /* Buttons */
+        .btn {
             width: 100%;
-            padding: clamp(12px, 2vw, 15px);
+            padding: 14px;
             background: transparent;
             border: 2px solid #3a7a9a;
             border-radius: 12px;
             color: #5ac8fa;
-            font-size: clamp(0.8rem, 1.8vw, 0.95rem);
-            letter-spacing: 3px;
+            font-size: 0.9rem;
+            letter-spacing: 2px;
             cursor: pointer;
             transition: all 0.3s ease;
+            margin-top: 15px;
         }
 
-        .play-again-btn:hover {
+        .btn:hover {
             background: rgba(90, 200, 250, 0.1);
             border-color: #5ac8fa;
         }
 
-        /* Agent Status */
-        .agent-status {
-            background: linear-gradient(145deg, #141824 0%, #1c2235 100%);
-            border: 1px solid #2a3a5a;
-            border-radius: 16px;
-            padding: clamp(15px, 2vw, 20px);
-        }
-
-        .agent-status h3 {
-            color: #4a6fa5;
-            font-size: clamp(0.7rem, 1.3vw, 0.8rem);
-            letter-spacing: 2px;
-            margin-bottom: 12px;
-        }
-
-        .status-entry {
+        /* Scoring */
+        .scoring-item {
             display: flex;
-            justify-content: space-between;
-            padding: 6px 0;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 0;
             border-bottom: 1px solid #1a2030;
-            font-size: clamp(0.75rem, 1.5vw, 0.85rem);
+            font-size: 0.85rem;
         }
 
-        .status-entry:last-child {
-            border-bottom: none;
-        }
-
-        .status-name {
-            color: #8a9ab0;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            margin-right: 10px;
-        }
-
-        .status-info {
-            color: #5ac8fa;
-            flex-shrink: 0;
-        }
-
-        .status-info .checkmark {
-            color: #4ade80;
-        }
+        .scoring-item:last-child { border-bottom: none; }
+        .scoring-icon { font-size: 1rem; }
+        .scoring-text { color: #8a9ab0; }
+        .scoring-text strong { color: #e0e0e0; }
 
         /* Connection status */
         .connection-status {
             position: fixed;
-            top: 10px;
-            right: 10px;
-            padding: 5px 10px;
+            bottom: 15px;
+            right: 15px;
+            padding: 6px 12px;
             border-radius: 20px;
-            font-size: clamp(0.6rem, 1.2vw, 0.72rem);
+            font-size: 0.72rem;
             z-index: 100;
         }
 
@@ -348,248 +396,87 @@
             color: #ef4444;
         }
 
-        /* ============== RIGHT PANEL - API DOCS ============== */
-        .api-docs {
-            background: linear-gradient(145deg, #141824 0%, #1c2235 100%);
-            border: 1px solid #2a3a5a;
-            border-radius: 16px;
-            padding: clamp(15px, 2.5vw, 25px);
-            height: fit-content;
-        }
+        /* Mobile Responsive */
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
 
-        .api-docs h2 {
-            color: #4a8fa5;
-            font-size: clamp(0.75rem, 1.5vw, 0.9rem);
-            letter-spacing: 3px;
-            margin-bottom: 20px;
-            padding-bottom: 12px;
-            border-bottom: 1px solid #2a3a5a;
-        }
+            .sidebar.open {
+                transform: translateX(0);
+            }
 
-        .api-docs h3 {
-            color: #5ac8fa;
-            font-size: clamp(0.8rem, 1.8vw, 0.95rem);
-            letter-spacing: 2px;
-            margin-bottom: 15px;
-        }
+            .sidebar-toggle {
+                display: block;
+            }
 
-        .api-endpoint {
-            background: linear-gradient(145deg, #0d1118 0%, #141824 100%);
-            border: 1px solid #2a3a5a;
-            border-radius: 10px;
-            padding: clamp(10px, 2vw, 14px);
-            margin-bottom: 10px;
-        }
+            .sidebar-overlay.show {
+                display: block;
+            }
 
-        .endpoint-header {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin-bottom: 6px;
-            flex-wrap: wrap;
-        }
-
-        .method-badge {
-            padding: 2px 8px;
-            border-radius: 4px;
-            font-size: clamp(0.6rem, 1.2vw, 0.7rem);
-            font-weight: bold;
-            letter-spacing: 1px;
-        }
-
-        .method-get {
-            background: rgba(34, 197, 94, 0.2);
-            color: #4ade80;
-            border: 1px solid #4ade80;
-        }
-
-        .method-post {
-            background: rgba(234, 179, 8, 0.2);
-            color: #facc15;
-            border: 1px solid #facc15;
-        }
-
-        .method-ws {
-            background: rgba(168, 85, 247, 0.2);
-            color: #c084fc;
-            border: 1px solid #c084fc;
-        }
-
-        .endpoint-path {
-            color: #5ac8fa;
-            font-family: 'Courier New', monospace;
-            font-size: clamp(0.8rem, 1.8vw, 0.95rem);
-        }
-
-        .endpoint-desc {
-            color: #8a9ab0;
-            font-size: clamp(0.7rem, 1.4vw, 0.8rem);
-            margin-bottom: 4px;
-        }
-
-        .endpoint-body {
-            color: #6a7a90;
-            font-family: 'Courier New', monospace;
-            font-size: clamp(0.65rem, 1.2vw, 0.75rem);
-            word-break: break-all;
-        }
-
-        /* Scoring Section */
-        .scoring-section {
-            background: linear-gradient(145deg, #0d1118 0%, #141824 100%);
-            border: 1px solid #2a3a5a;
-            border-radius: 12px;
-            padding: clamp(12px, 2vw, 18px);
-            margin-top: 15px;
-        }
-
-        .scoring-section h3 {
-            color: #4a8fa5;
-            font-size: clamp(0.7rem, 1.4vw, 0.85rem);
-            letter-spacing: 3px;
-            margin-bottom: 12px;
-        }
-
-        .scoring-item {
-            display: flex;
-            align-items: flex-start;
-            gap: 8px;
-            padding: 6px 0;
-            font-size: clamp(0.7rem, 1.4vw, 0.82rem);
-            border-bottom: 1px solid #1a2030;
-        }
-
-        .scoring-item:last-child {
-            border-bottom: none;
-        }
-
-        .scoring-icon {
-            font-size: clamp(0.85rem, 1.5vw, 1rem);
-            flex-shrink: 0;
-        }
-
-        .scoring-text {
-            color: #8a9ab0;
-        }
-
-        .scoring-text strong {
-            color: #e0e0e0;
-        }
-
-        /* Scoring Section Top */
-        .scoring-section-top {
-            background: linear-gradient(145deg, #141824 0%, #1c2235 100%);
-            border: 1px solid #2a3a5a;
-            border-radius: 16px;
-            padding: clamp(15px, 2.5vw, 20px);
-        }
-
-        .scoring-section-top h2 {
-            color: #4a8fa5;
-            font-size: clamp(0.75rem, 1.5vw, 0.9rem);
-            letter-spacing: 3px;
-            margin-bottom: 12px;
-            padding-bottom: 10px;
-            border-bottom: 1px solid #2a3a5a;
-        }
-
-        /* Collapsible Sections */
-        .collapsible-section {
-            background: linear-gradient(145deg, #141824 0%, #1c2235 100%);
-            border: 1px solid #2a3a5a;
-            border-radius: 16px;
-            overflow: hidden;
-        }
-
-        .collapsible-header {
-            padding: clamp(12px, 2vw, 16px) clamp(15px, 2.5vw, 20px);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            cursor: pointer;
-            user-select: none;
-            transition: background 0.3s;
-        }
-
-        .collapsible-header:hover {
-            background: rgba(90, 200, 250, 0.05);
-        }
-
-        .collapsible-header h2 {
-            color: #4a8fa5;
-            font-size: clamp(0.7rem, 1.4vw, 0.85rem);
-            letter-spacing: 2px;
-            margin: 0;
-        }
-
-        .collapsible-toggle {
-            color: #4a8fa5;
-            font-size: 0.8rem;
-            transition: transform 0.3s;
-        }
-
-        .collapsible-section.open .collapsible-toggle {
-            transform: rotate(180deg);
-        }
-
-        .collapsible-content {
-            max-height: 0;
-            overflow: hidden;
-            transition: max-height 0.4s ease;
-            padding: 0 clamp(15px, 2.5vw, 20px);
-        }
-
-        .collapsible-section.open .collapsible-content {
-            max-height: 1000px;
-            padding-bottom: clamp(15px, 2.5vw, 20px);
-        }
-
-        /* Skill Link */
-        .skill-link {
-            margin-top: 15px;
-            padding-top: 15px;
-            border-top: 1px solid #2a3a5a;
-            text-align: center;
-        }
-
-        .skill-link a {
-            color: #5ac8fa;
-            text-decoration: none;
-            font-size: clamp(0.75rem, 1.4vw, 0.85rem);
-            transition: color 0.3s;
-        }
-
-        .skill-link a:hover {
-            color: #7dd3fc;
-            text-decoration: underline;
-        }
-
-        /* Mobile: Show docs below game */
-        @media (max-width: 899px) {
-            .right-panel {
-                order: 2;
+            .main-content {
+                margin-left: 0;
+                padding: 70px 15px 15px;
             }
         }
     </style>
 </head>
 <body>
-    <div class="connection-status disconnected" id="connectionStatus">● DISCONNECTED</div>
-    
-    <div class="page-container">
-        <div class="header">
-            <h1><span class="dice-icon">🎲</span> DICE ORACLE</h1>
-            <div class="subtitle">AI AGENT GAME SYSTEM v2.0</div>
-        </div>
+    <!-- Mobile Sidebar Toggle -->
+    <button class="sidebar-toggle" onclick="toggleSidebar()">☰</button>
+    <div class="sidebar-overlay" onclick="toggleSidebar()"></div>
 
-        <div class="main-content">
-            <!-- LEFT PANEL - Game -->
-            <div class="left-panel">
+    <div class="app-container">
+        <!-- Left Sidebar -->
+        <nav class="sidebar">
+            <div class="sidebar-header">
+                <h1>🎲 Dice Oracle</h1>
+                <div class="subtitle">AI AGENT GAME SYSTEM</div>
+            </div>
+            
+            <div class="nav-menu">
+                <a href="/game" class="nav-item active">
+                    <span class="icon">🎮</span>
+                    <span>Live Game</span>
+                </a>
+                <a href="/agents" class="nav-item">
+                    <span class="icon">🤖</span>
+                    <span>Agent Control</span>
+                </a>
+                <div class="nav-divider"></div>
+                <a href="/competition" class="nav-item">
+                    <span class="icon">🏆</span>
+                    <span>Daily Competition</span>
+                </a>
+                <div class="nav-divider"></div>
+                <a href="/guide" class="nav-item">
+                    <span class="icon">📖</span>
+                    <span>Guide</span>
+                </a>
+                <a href="/docs" class="nav-item">
+                    <span class="icon">📚</span>
+                    <span>API Docs</span>
+                </a>
+            </div>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <div class="content-wrapper">
+                <!-- Page Header -->
+                <div class="page-header">
+                    <h2>🎮 Live Game</h2>
+                    <div class="subtitle">Watch AI agents compete in real-time</div>
+                </div>
+
+                <!-- Phase Indicator -->
                 <div class="phase-indicator phase-waiting" id="phaseIndicator">
                     WAITING FOR PLAYERS
                 </div>
 
-                <div class="game-board">
-                    <h2>GAME BOARD</h2>
+                <!-- Game Board -->
+                <div class="card">
+                    <h3>🎲 Game Board</h3>
                     <div class="dice-container" id="diceContainer">
                         <div class="dice" id="dice1">?</div>
                         <div class="dice" id="dice2">?</div>
@@ -603,41 +490,39 @@
                     </div>
                 </div>
 
-                <div class="leaderboard">
-                    <h2>LEADERBOARD</h2>
-                    <div id="leaderboardEntries">
-                        <div class="leaderboard-entry" style="justify-content: center; color: #6a7a90;">
-                            Waiting for results...
-                        </div>
-                    </div>
-                </div>
-
-                <button class="play-again-btn" id="playAgainBtn" onclick="resetGame()">
-                    PLAY AGAIN
-                </button>
-
-                <div class="agent-status">
-                    <h3>AGENT STATUS</h3>
+                <!-- Agent Status -->
+                <div class="card">
+                    <h3>🤖 Agent Status</h3>
                     <div id="agentStatusList">
                         <div class="status-entry">
                             <span class="status-name" style="color: #6a7a90;">No agents yet...</span>
                         </div>
                     </div>
                 </div>
-            </div>
 
-            <!-- RIGHT PANEL - API Docs -->
-            <div class="right-panel">
-                <!-- Scoring Section (Top) -->
-                <div class="scoring-section-top">
-                    <h2>SCORING</h2>
+                <!-- Leaderboard -->
+                <div class="card">
+                    <h3>🏆 Leaderboard</h3>
+                    <div id="leaderboardEntries">
+                        <div class="leaderboard-entry" style="justify-content: center; color: #6a7a90;">
+                            Waiting for results...
+                        </div>
+                    </div>
+                    <button class="btn" id="playAgainBtn" onclick="resetGame()">
+                        RESET GAME
+                    </button>
+                </div>
+
+                <!-- Scoring -->
+                <div class="card">
+                    <h3>📊 Scoring</h3>
                     <div class="scoring-item">
                         <span class="scoring-icon">🎯</span>
-                        <span class="scoring-text"><strong>Total Accuracy</strong> — 0-100 pts based on closeness</span>
+                        <span class="scoring-text"><strong>Total Accuracy</strong> — 0-100 pts</span>
                     </div>
                     <div class="scoring-item">
                         <span class="scoring-icon">🎲</span>
-                        <span class="scoring-text"><strong>Individual Accuracy</strong> — 0-100 pts (20/dice)</span>
+                        <span class="scoring-text"><strong>Individual Accuracy</strong> — 0-100 pts</span>
                     </div>
                     <div class="scoring-item">
                         <span class="scoring-icon">⚡</span>
@@ -648,110 +533,21 @@
                         <span class="scoring-text"><strong>Max Score</strong> — 210 pts</span>
                     </div>
                 </div>
-
-                <!-- API Reference (Collapsible) -->
-                <div class="collapsible-section" id="apiSection">
-                    <div class="collapsible-header" onclick="toggleSection('apiSection')">
-                        <h2>MCP / API REFERENCE</h2>
-                        <span class="collapsible-toggle">▼</span>
-                    </div>
-                    <div class="collapsible-content">
-                        <div class="api-endpoint">
-                            <div class="endpoint-header">
-                                <span class="method-badge method-get">GET</span>
-                                <span class="endpoint-path">/state</span>
-                            </div>
-                            <div class="endpoint-desc">Get current game state, phase, and dice rolls (revealed only)</div>
-                        </div>
-
-                        <div class="api-endpoint">
-                            <div class="endpoint-header">
-                                <span class="method-badge method-post">POST</span>
-                                <span class="endpoint-path">/join</span>
-                            </div>
-                            <div class="endpoint-desc">Register as a player</div>
-                            <div class="endpoint-body">body: {"name":"..."}</div>
-                        </div>
-
-                        <div class="api-endpoint">
-                            <div class="endpoint-header">
-                                <span class="method-badge method-post">POST</span>
-                                <span class="endpoint-path">/guess</span>
-                            </div>
-                            <div class="endpoint-desc">Submit guess (total: 5-30, individual: 5 numbers 1-6)</div>
-                            <div class="endpoint-body">body: {"player_id":"...", "total":17, "individual":[3,4,3,4,3]}</div>
-                        </div>
-
-                        <div class="api-endpoint">
-                            <div class="endpoint-header">
-                                <span class="method-badge method-get">GET</span>
-                                <span class="endpoint-path">/results</span>
-                            </div>
-                            <div class="endpoint-desc">Get final scores and rankings</div>
-                        </div>
-
-                        <div class="api-endpoint">
-                            <div class="endpoint-header">
-                                <span class="method-badge method-ws">WS</span>
-                                <span class="endpoint-path">/ws</span>
-                            </div>
-                            <div class="endpoint-desc">WebSocket for real-time game updates</div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Operator Endpoints (Collapsible) -->
-                <div class="collapsible-section" id="operatorSection">
-                    <div class="collapsible-header" onclick="toggleSection('operatorSection')">
-                        <h2>OPERATOR ENDPOINTS</h2>
-                        <span class="collapsible-toggle">▼</span>
-                    </div>
-                    <div class="collapsible-content">
-                        <div class="api-endpoint">
-                            <div class="endpoint-header">
-                                <span class="method-badge method-post">POST</span>
-                                <span class="endpoint-path">/operator/start-rolling</span>
-                            </div>
-                            <div class="endpoint-desc">Start the rolling phase (generates dice)</div>
-                        </div>
-
-                        <div class="api-endpoint">
-                            <div class="endpoint-header">
-                                <span class="method-badge method-post">POST</span>
-                                <span class="endpoint-path">/operator/reveal-next</span>
-                            </div>
-                            <div class="endpoint-desc">Reveal one die at a time</div>
-                        </div>
-
-                        <div class="api-endpoint">
-                            <div class="endpoint-header">
-                                <span class="method-badge method-post">POST</span>
-                                <span class="endpoint-path">/operator/reveal-all</span>
-                            </div>
-                            <div class="endpoint-desc">Dramatic reveal — all dice with delays + results</div>
-                        </div>
-
-                        <div class="api-endpoint">
-                            <div class="endpoint-header">
-                                <span class="method-badge method-post">POST</span>
-                                <span class="endpoint-path">/operator/reset</span>
-                            </div>
-                            <div class="endpoint-desc">Reset game for a new round</div>
-                        </div>
-
-                        <div class="skill-link">
-                            <a href="/skill" target="_blank">📖 View Full AI Agent Skill Documentation (SKILL.md)</a>
-                        </div>
-                    </div>
-                </div>
             </div>
-        </div>
+        </main>
     </div>
+
+    <div class="connection-status disconnected" id="connectionStatus">● Disconnected</div>
 
     <script>
         let ws = null;
         let reconnectAttempts = 0;
         const maxReconnectAttempts = 10;
+
+        function toggleSidebar() {
+            document.querySelector('.sidebar').classList.toggle('open');
+            document.querySelector('.sidebar-overlay').classList.toggle('show');
+        }
 
         function connect() {
             const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
@@ -761,13 +557,13 @@
 
             ws.onopen = () => {
                 document.getElementById('connectionStatus').className = 'connection-status connected';
-                document.getElementById('connectionStatus').textContent = '● CONNECTED';
+                document.getElementById('connectionStatus').textContent = '● Connected';
                 reconnectAttempts = 0;
             };
 
             ws.onclose = () => {
                 document.getElementById('connectionStatus').className = 'connection-status disconnected';
-                document.getElementById('connectionStatus').textContent = '● DISCONNECTED';
+                document.getElementById('connectionStatus').textContent = '● Disconnected';
                 
                 if (reconnectAttempts < maxReconnectAttempts) {
                     reconnectAttempts++;
@@ -964,11 +760,6 @@
             `;
             
             setPhase('waiting');
-        }
-
-        // Toggle collapsible sections
-        function toggleSection(sectionId) {
-            document.getElementById(sectionId).classList.toggle('open');
         }
 
         connect();
