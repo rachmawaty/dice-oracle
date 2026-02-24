@@ -3,12 +3,16 @@ import asyncio
 import json
 from pathlib import Path
 from contextlib import asynccontextmanager
+from datetime import datetime
+from zoneinfo import ZoneInfo
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 from typing import Optional
 from pydantic import BaseModel
+from apscheduler.schedulers.asyncio import AsyncIOScheduler
+from apscheduler.triggers.cron import CronTrigger
 
 from models import (
     JoinRequest, JoinResponse, GuessRequest,
@@ -16,6 +20,13 @@ from models import (
 )
 from game import DiceGame
 from competition import daily_competition
+from run_agents import start_agents, stop_agents
+
+# Timezone
+ET = ZoneInfo("America/New_York")
+
+# Enable/disable bot agents
+ENABLE_AGENTS = True
 
 
 # Competition request models
@@ -65,13 +76,69 @@ class ConnectionManager:
 
 manager = ConnectionManager()
 
+# Scheduler for automatic competition rolls
+scheduler = AsyncIOScheduler(timezone=ET)
+
+
+async def scheduled_roll(round_num: int):
+    """Execute scheduled dice roll for competition."""
+    print(f"🎲 [Scheduler] Rolling round {round_num}...")
+    success, message, result = daily_competition.roll_round(round_num)
+    
+    if success:
+        print(f"✅ [Scheduler] Round {round_num}: {result}")
+        # Broadcast to WebSocket clients
+        await manager.broadcast({
+            "event": "competition_round_rolled",
+            "round_num": round_num,
+            "result": result
+        })
+        
+        # Update leaderboard after final round
+        if round_num == 3:
+            daily_competition.update_leaderboard()
+            print("✅ [Scheduler] Leaderboard updated")
+    else:
+        print(f"⚠️ [Scheduler] Roll skipped: {message}")
+
+
+def roll_round_1():
+    asyncio.create_task(scheduled_roll(1))
+
+def roll_round_2():
+    asyncio.create_task(scheduled_roll(2))
+
+def roll_round_3():
+    asyncio.create_task(scheduled_roll(3))
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Startup
     print("🎲 Dice Game Server starting...")
+    
+    # Schedule competition rolls (Eastern Time)
+    # Round 1 at 1:00 PM ET
+    scheduler.add_job(roll_round_1, CronTrigger(hour=13, minute=0, timezone=ET), id="roll_1")
+    # Round 2 at 2:00 PM ET
+    scheduler.add_job(roll_round_2, CronTrigger(hour=14, minute=0, timezone=ET), id="roll_2")
+    # Round 3 at 3:00 PM ET
+    scheduler.add_job(roll_round_3, CronTrigger(hour=15, minute=0, timezone=ET), id="roll_3")
+    
+    scheduler.start()
+    print("🕐 Competition scheduler started (rolls at 1 PM, 2 PM, 3 PM ET)")
+    print(f"📅 Server time: {datetime.now(ET).strftime('%Y-%m-%d %I:%M %p ET')}")
+    
+    # Start bot agents
+    if ENABLE_AGENTS:
+        start_agents()
+    
     yield
+    
     # Shutdown
+    if ENABLE_AGENTS:
+        stop_agents()
+    scheduler.shutdown()
     print("🎲 Dice Game Server shutting down...")
 
 

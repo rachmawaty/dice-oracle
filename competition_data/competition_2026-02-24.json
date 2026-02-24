@@ -5,7 +5,19 @@
       "id": "56891",
       "name": "CompBot-Alpha",
       "registered_at": "2026-02-24T11:54:30.538401-05:00",
-      "guesses": {},
+      "guesses": {
+        "1": {
+          "total": 17,
+          "individual": [
+            4,
+            3,
+            3,
+            3,
+            4
+          ],
+          "timestamp": "2026-02-24T12:00:01.115025-05:00"
+        }
+      },
       "scores": {},
       "total_score": 0
     },
@@ -13,7 +25,19 @@
       "id": "30432",
       "name": "CompBot-Beta",
       "registered_at": "2026-02-24T11:54:44.072127-05:00",
-      "guesses": {},
+      "guesses": {
+        "1": {
+          "total": 17,
+          "individual": [
+            3,
+            4,
+            3,
+            3,
+            3
+          ],
+          "timestamp": "2026-02-24T12:00:46.086496-05:00"
+        }
+      },
       "scores": {},
       "total_score": 0
     }
