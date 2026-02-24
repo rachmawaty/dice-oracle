@@ -659,11 +659,11 @@
             await fetchResults();
             connectWebSocket();
 
-            // Refresh every 30 seconds
+            // Refresh every 5 seconds for responsive updates
             setInterval(() => {
                 fetchState();
                 fetchResults();
-            }, 30000);
+            }, 5000);
         }
 
         init();

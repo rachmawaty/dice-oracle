@@ -26,7 +26,7 @@ from run_agents import start_agents, stop_agents
 ET = ZoneInfo("America/New_York")
 
 # Enable/disable bot agents
-ENABLE_AGENTS = True
+ENABLE_AGENTS = False
 
 
 # Competition request models

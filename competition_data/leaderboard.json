@@ -1,0 +1,17 @@
+{
+  "players": {
+    "CompBot-Alpha": {
+      "total_score": 434,
+      "days_played": 1,
+      "rounds_played": 3,
+      "wins": 0
+    },
+    "CompBot-Beta": {
+      "total_score": 443,
+      "days_played": 1,
+      "rounds_played": 3,
+      "wins": 1
+    }
+  },
+  "last_updated": "2026-02-24T15:00:00.003101-05:00"
+}

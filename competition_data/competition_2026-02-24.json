@@ -16,10 +16,51 @@
             4
           ],
           "timestamp": "2026-02-24T12:00:01.115025-05:00"
+        },
+        "2": {
+          "total": 17,
+          "individual": [
+            4,
+            4,
+            4,
+            4,
+            4
+          ],
+          "timestamp": "2026-02-24T13:24:07.001711-05:00"
+        },
+        "3": {
+          "total": 17,
+          "individual": [
+            3,
+            4,
+            4,
+            4,
+            3
+          ],
+          "timestamp": "2026-02-24T14:00:18.479781-05:00"
         }
       },
-      "scores": {},
-      "total_score": 0
+      "scores": {
+        "1": {
+          "total_acc": 80,
+          "individual_acc": 64,
+          "speed_bonus": 10,
+          "total": 154
+        },
+        "2": {
+          "total_acc": 85,
+          "individual_acc": 48,
+          "speed_bonus": 10,
+          "total": 143
+        },
+        "3": {
+          "total_acc": 75,
+          "individual_acc": 52,
+          "speed_bonus": 10,
+          "total": 137
+        }
+      },
+      "total_score": 434
     },
     "30432": {
       "id": "30432",
@@ -36,11 +77,89 @@
             3
           ],
           "timestamp": "2026-02-24T12:00:46.086496-05:00"
+        },
+        "2": {
+          "total": 18,
+          "individual": [
+            3,
+            3,
+            4,
+            4,
+            3
+          ],
+          "timestamp": "2026-02-24T13:24:18.989613-05:00"
+        },
+        "3": {
+          "total": 19,
+          "individual": [
+            3,
+            3,
+            4,
+            3,
+            3
+          ],
+          "timestamp": "2026-02-24T14:00:21.127578-05:00"
         }
       },
-      "scores": {},
-      "total_score": 0
+      "scores": {
+        "1": {
+          "total_acc": 80,
+          "individual_acc": 68,
+          "speed_bonus": 8,
+          "total": 156
+        },
+        "2": {
+          "total_acc": 90,
+          "individual_acc": 56,
+          "speed_bonus": 8,
+          "total": 154
+        },
+        "3": {
+          "total_acc": 85,
+          "individual_acc": 40,
+          "speed_bonus": 8,
+          "total": 133
+        }
+      },
+      "total_score": 443
     }
   },
-  "rounds": {}
+  "rounds": {
+    "1": {
+      "round_num": 1,
+      "rolls": [
+        4,
+        5,
+        3,
+        6,
+        3
+      ],
+      "total": 21,
+      "rolled_at": "2026-02-24T13:24:04.678469-05:00"
+    },
+    "2": {
+      "round_num": 2,
+      "rolls": [
+        5,
+        1,
+        5,
+        6,
+        3
+      ],
+      "total": 20,
+      "rolled_at": "2026-02-24T14:00:00.001619-05:00"
+    },
+    "3": {
+      "round_num": 3,
+      "rolls": [
+        4,
+        4,
+        2,
+        6,
+        6
+      ],
+      "total": 22,
+      "rolled_at": "2026-02-24T15:00:00.002320-05:00"
+    }
+  }
 }
