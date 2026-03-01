@@ -421,9 +421,9 @@ class DailyCompetition:
         
         return {"players": {}, "last_updated": None}
     
-    def get_history(self) -> list[dict]:
-        """Get competition history for all days."""
-        history = []
+    def get_history(self) -> dict:
+        """Get competition history for all days, grouped by date with actual rolls."""
+        history_by_date = {}
         
         # Read all competition data files
         for data_file in sorted(DATA_DIR.glob("competition_*.json"), reverse=True):
@@ -431,7 +431,19 @@ class DailyCompetition:
                 data = json.loads(data_file.read_text())
                 date = data.get("date")
                 
+                # Get actual dice rolls for each round
+                rounds_rolls = {}
+                for rn in [1, 2, 3]:
+                    round_data = data.get("rounds", {}).get(str(rn))
+                    if round_data:
+                        rounds_rolls[rn] = {
+                            "rolls": round_data.get("rolls"),
+                            "total": round_data.get("total"),
+                            "rolled_at": round_data.get("rolled_at")
+                        }
+                
                 # Get all players with their results
+                players = []
                 for player_id, player_data in data.get("players", {}).items():
                     # Build round details
                     rounds_data = []
@@ -447,18 +459,29 @@ class DailyCompetition:
                                 "score": score.get("total") if score else 0
                             })
                     
-                    history.append({
-                        "date": date,
+                    players.append({
                         "player_id": player_data.get("id"),
                         "player_name": player_data.get("name"),
                         "rounds": rounds_data,
-                        "total_score": player_data.get("total_score", 0),
-                        "rank": player_data.get("rank", 0)
+                        "total_score": player_data.get("total_score", 0)
                     })
+                
+                # Sort players by score (highest first)
+                players.sort(key=lambda p: -p["total_score"])
+                
+                # Assign ranks
+                for i, player in enumerate(players):
+                    player["rank"] = i + 1
+                
+                history_by_date[date] = {
+                    "date": date,
+                    "rounds_rolls": rounds_rolls,
+                    "players": players
+                }
             except Exception as e:
                 print(f"Error reading {data_file}: {e}")
         
-        return history
+        return history_by_date
     
     def update_leaderboard(self):
         """Update overall leaderboard with today's results."""

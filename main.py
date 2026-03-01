@@ -396,8 +396,16 @@ async def competition_leaderboard():
 
 @app.get("/competition/history")
 async def competition_history():
-    """Get full competition history across all days."""
-    return {"history": daily_competition.get_history()}
+    """Get full competition history across all days, grouped by date with actual rolls."""
+    history_by_date = daily_competition.get_history()
+    
+    # Convert to list sorted by date (newest first)
+    history_list = [
+        {"date": date, **data}
+        for date, data in sorted(history_by_date.items(), reverse=True)
+    ]
+    
+    return {"history": history_list}
 
 
 @app.post("/competition/operator/roll/{round_num}")

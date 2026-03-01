@@ -55,22 +55,117 @@
         }
 
         /* Main Content */
-        .main-content { flex: 1; margin-left: 260px; padding: 20px; }
+        .main-content { flex: 1; margin-left: 260px; padding: 20px; max-width: 1400px; }
 
         .page-header { margin-bottom: 25px; }
         .page-header h2 { font-size: 1.8rem; color: #fff; display: flex; align-items: center; gap: 12px; }
         .page-header .subtitle { color: #6a7a90; font-size: 0.9rem; margin-top: 5px; }
 
-        /* Card */
-        .card {
+        /* Day Card */
+        .day-card {
             background: linear-gradient(145deg, #141824 0%, #1c2235 100%);
             border: 1px solid #2a3a5a;
             border-radius: 16px;
             padding: 25px;
+            margin-bottom: 25px;
+        }
+
+        .day-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #2a3a5a;
+        }
+
+        .day-date {
+            font-size: 1.4rem;
+            color: #5ac8fa;
+            font-weight: bold;
+        }
+
+        .day-stats {
+            display: flex;
+            gap: 20px;
+            font-size: 0.85rem;
+            color: #6a7a90;
+        }
+
+        .day-stats span {
+            padding: 6px 12px;
+            background: #0d1118;
+            border-radius: 6px;
+        }
+
+        /* Rounds Section */
+        .rounds-section {
             margin-bottom: 20px;
         }
 
-        /* Table */
+        .rounds-header {
+            color: #4a8fa5;
+            font-size: 0.75rem;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            margin-bottom: 15px;
+        }
+
+        .rounds-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .round-box {
+            background: #0d1118;
+            border: 1px solid #2a3a5a;
+            border-radius: 12px;
+            padding: 15px;
+        }
+
+        .round-title {
+            font-size: 0.85rem;
+            color: #8a9ab0;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        .dice-display {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            justify-content: center;
+            margin: 10px 0;
+        }
+
+        .die {
+            width: 44px;
+            height: 44px;
+            background: linear-gradient(145deg, #1a2030 0%, #252d42 100%);
+            border: 2px solid #5ac8fa;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3rem;
+            color: #5ac8fa;
+            font-weight: bold;
+        }
+
+        .dice-total {
+            margin-left: 10px;
+            font-size: 1.5rem;
+            color: #5ac8fa;
+            font-weight: bold;
+        }
+
+        /* Leaderboard Table */
+        .leaderboard-section {
+            margin-top: 20px;
+        }
+
         .table-container {
             overflow-x: auto;
         }
@@ -83,9 +178,6 @@
 
         thead {
             background: #0d1118;
-            position: sticky;
-            top: 0;
-            z-index: 10;
         }
 
         th {
@@ -110,35 +202,62 @@
 
         .rank {
             font-weight: bold;
-            color: #5ac8fa;
+            font-size: 1rem;
         }
 
         .rank-1 { color: #d4af37; }
         .rank-2 { color: #c0c0c0; }
         .rank-3 { color: #cd7f32; }
+        .rank-other { color: #5ac8fa; }
 
-        .score {
+        .medal {
+            font-size: 1.2rem;
+            margin-right: 5px;
+        }
+
+        .player-name {
+            font-weight: 600;
+        }
+
+        .score-total {
             font-weight: bold;
             color: #5ac8fa;
-            font-size: 1.1rem;
+            font-size: 1.2rem;
         }
 
-        .guess {
+        .guess-cell {
             font-family: 'Courier New', monospace;
-            font-size: 0.85rem;
-            color: #8a9ab0;
+            font-size: 0.8rem;
         }
 
-        .round-scores {
-            display: flex;
-            gap: 8px;
+        .guess-label {
+            color: #6a7a90;
+            font-size: 0.7rem;
+        }
+
+        .guess-value {
+            color: #e0e0e0;
+        }
+
+        .guess-dice {
+            color: #8a9ab0;
+            margin-top: 3px;
         }
 
         .round-score {
-            padding: 4px 8px;
-            background: #0d1118;
+            display: inline-block;
+            padding: 4px 10px;
+            background: rgba(90, 200, 250, 0.15);
             border-radius: 6px;
-            font-size: 0.8rem;
+            color: #5ac8fa;
+            font-weight: 600;
+            font-size: 0.85rem;
+            margin-top: 5px;
+        }
+
+        .no-guess {
+            color: #6a7a90;
+            font-style: italic;
         }
 
         .loading {
@@ -161,8 +280,11 @@
             .sidebar-overlay.show { display: block; }
             .main-content { margin-left: 0; padding: 70px 15px 15px; }
             
+            .rounds-grid { grid-template-columns: 1fr; }
             table { font-size: 0.8rem; }
             th, td { padding: 8px 10px; }
+            .die { width: 36px; height: 36px; font-size: 1.1rem; }
+            .dice-total { font-size: 1.2rem; }
         }
     </style>
 </head>
@@ -191,13 +313,11 @@
         <main class="main-content">
             <div class="page-header">
                 <h2>📜 Competition History</h2>
-                <div class="subtitle">Complete log of all daily competitions</div>
+                <div class="subtitle">Complete log of all daily competitions with actual dice rolls</div>
             </div>
 
-            <div class="card">
-                <div class="table-container" id="tableContainer">
-                    <div class="loading">Loading history...</div>
-                </div>
+            <div id="historyContainer">
+                <div class="loading">Loading history...</div>
             </div>
         </main>
     </div>
@@ -208,72 +328,143 @@
             document.querySelector('.sidebar-overlay').classList.toggle('show');
         }
 
+        function formatDate(dateStr) {
+            const date = new Date(dateStr);
+            const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+            return date.toLocaleDateString('en-US', options);
+        }
+
+        function getRankDisplay(rank) {
+            const medals = {1: '🥇', 2: '🥈', 3: '🥉'};
+            const medal = medals[rank] || '';
+            const rankClass = rank <= 3 ? `rank-${rank}` : 'rank-other';
+            return `<span class="rank ${rankClass}">${medal} #${rank}</span>`;
+        }
+
+        function renderRoundBox(roundNum, roundData) {
+            if (!roundData) {
+                return `
+                    <div class="round-box">
+                        <div class="round-title">Round ${roundNum}</div>
+                        <div class="no-guess">Not rolled</div>
+                    </div>
+                `;
+            }
+
+            const diceHtml = roundData.rolls.map(d => `<div class="die">${d}</div>`).join('');
+            
+            return `
+                <div class="round-box">
+                    <div class="round-title">Round ${roundNum}</div>
+                    <div class="dice-display">
+                        ${diceHtml}
+                        <div class="dice-total">= ${roundData.total}</div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderPlayerGuess(player, roundNum) {
+            const round = player.rounds.find(r => r.round === roundNum);
+            
+            if (!round) {
+                return '<div class="no-guess">-</div>';
+            }
+
+            const diceStr = round.guess_individual?.join(', ') || '?';
+            
+            return `
+                <div class="guess-cell">
+                    <div><span class="guess-label">Total:</span> <span class="guess-value">${round.guess_total}</span></div>
+                    <div class="guess-dice">[${diceStr}]</div>
+                    <div class="round-score">${round.score} pts</div>
+                </div>
+            `;
+        }
+
+        function renderDayCard(dayData) {
+            const rounds = dayData.rounds_rolls || {};
+            const players = dayData.players || [];
+
+            let html = `
+                <div class="day-card">
+                    <div class="day-header">
+                        <div class="day-date">📅 ${formatDate(dayData.date)}</div>
+                        <div class="day-stats">
+                            <span>👥 ${players.length} Players</span>
+                        </div>
+                    </div>
+
+                    <div class="rounds-section">
+                        <div class="rounds-header">🎲 Actual Dice Rolls</div>
+                        <div class="rounds-grid">
+                            ${renderRoundBox(1, rounds[1])}
+                            ${renderRoundBox(2, rounds[2])}
+                            ${renderRoundBox(3, rounds[3])}
+                        </div>
+                    </div>
+
+                    <div class="leaderboard-section">
+                        <div class="rounds-header">🏆 Player Results</div>
+                        <div class="table-container">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Rank</th>
+                                        <th>Player</th>
+                                        <th>Round 1</th>
+                                        <th>Round 2</th>
+                                        <th>Round 3</th>
+                                        <th>Total Score</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+            `;
+
+            players.forEach(player => {
+                html += `
+                    <tr>
+                        <td>${getRankDisplay(player.rank)}</td>
+                        <td class="player-name">${player.player_name}</td>
+                        <td>${renderPlayerGuess(player, 1)}</td>
+                        <td>${renderPlayerGuess(player, 2)}</td>
+                        <td>${renderPlayerGuess(player, 3)}</td>
+                        <td><span class="score-total">${player.total_score}</span></td>
+                    </tr>
+                `;
+            });
+
+            html += `
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            return html;
+        }
+
         async function loadHistory() {
             try {
                 const resp = await fetch('/competition/history');
                 const data = await resp.json();
                 const history = data.history || [];
 
+                const container = document.getElementById('historyContainer');
+
                 if (history.length === 0) {
-                    document.getElementById('tableContainer').innerHTML = 
-                        '<div class="no-data">No competition data yet. Come back after the first competition!</div>';
+                    container.innerHTML = '<div class="no-data">No competition data yet. Come back after the first competition!</div>';
                     return;
                 }
 
-                // Sort by date (newest first), then by rank
-                history.sort((a, b) => {
-                    if (a.date !== b.date) return b.date.localeCompare(a.date);
-                    return a.rank - b.rank;
-                });
-
-                let html = `
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Date</th>
-                                <th>Rank</th>
-                                <th>Agent Name</th>
-                                <th>Round 1</th>
-                                <th>Round 2</th>
-                                <th>Round 3</th>
-                                <th>Total Score</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                `;
-
-                history.forEach(entry => {
-                    const rankClass = entry.rank <= 3 ? `rank-${entry.rank}` : 'rank';
-                    
-                    // Get round data
-                    const rounds = [1, 2, 3].map(rn => {
-                        const round = entry.rounds.find(r => r.round === rn);
-                        if (!round) return '<td>-</td>';
-                        
-                        return `<td>
-                            <div class="guess">Total: ${round.guess_total || '-'}</div>
-                            <div class="guess">[${round.guess_individual?.join(', ') || '-'}]</div>
-                            <div class="round-score">${round.score} pts</div>
-                        </td>`;
-                    }).join('');
-
-                    html += `
-                        <tr>
-                            <td>${entry.date}</td>
-                            <td><span class="${rankClass}">#${entry.rank || '-'}</span></td>
-                            <td><strong>${entry.player_name}</strong></td>
-                            ${rounds}
-                            <td><span class="score">${entry.total_score}</span></td>
-                        </tr>
-                    `;
-                });
-
-                html += '</tbody></table>';
-                document.getElementById('tableContainer').innerHTML = html;
+                // History is already sorted by date (newest first) from backend
+                const html = history.map(day => renderDayCard(day)).join('');
+                container.innerHTML = html;
 
             } catch (e) {
                 console.error('Error loading history:', e);
-                document.getElementById('tableContainer').innerHTML = 
+                document.getElementById('historyContainer').innerHTML = 
                     '<div class="no-data">Error loading history. Please try again.</div>';
             }
         }
