@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Competition History - Dice Oracle</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0a0e17 0%, #1a1f2e 100%);
+            min-height: 100vh;
+            color: #e0e0e0;
+        }
+
+        .app-container { display: flex; min-height: 100vh; }
+
+        /* Sidebar */
+        .sidebar {
+            width: 260px;
+            background: linear-gradient(180deg, #0d1219 0%, #141a24 100%);
+            border-right: 1px solid #2a3a5a;
+            padding: 20px 0;
+            display: flex;
+            flex-direction: column;
+            position: fixed;
+            height: 100vh;
+            z-index: 100;
+        }
+
+        .sidebar-header { padding: 0 20px 20px; border-bottom: 1px solid #2a3a5a; margin-bottom: 10px; }
+        .sidebar-header h1 { font-size: 1.3rem; color: #fff; display: flex; align-items: center; gap: 10px; }
+        .sidebar-header .subtitle { color: #4a6fa5; font-size: 0.7rem; letter-spacing: 2px; margin-top: 5px; }
+
+        .nav-menu { flex: 1; padding: 10px 0; }
+        .nav-item {
+            display: flex; align-items: center; gap: 12px; padding: 14px 20px;
+            color: #8a9ab0; text-decoration: none; font-size: 0.9rem;
+            transition: all 0.2s ease; border-left: 3px solid transparent;
+        }
+        .nav-item:hover { background: rgba(90, 200, 250, 0.05); color: #5ac8fa; }
+        .nav-item.active { background: rgba(90, 200, 250, 0.1); color: #5ac8fa; border-left-color: #5ac8fa; }
+        .nav-item .icon { font-size: 1.2rem; width: 24px; text-align: center; }
+        .nav-divider { height: 1px; background: #2a3a5a; margin: 10px 20px; }
+
+        .sidebar-toggle {
+            display: none; position: fixed; top: 15px; left: 15px; z-index: 200;
+            background: #1c2235; border: 1px solid #2a3a5a; border-radius: 8px;
+            padding: 10px 12px; color: #5ac8fa; cursor: pointer; font-size: 1.2rem;
+        }
+        .sidebar-overlay {
+            display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0, 0, 0, 0.5); z-index: 90;
+        }
+
+        /* Main Content */
+        .main-content { flex: 1; margin-left: 260px; padding: 20px; }
+
+        .page-header { margin-bottom: 25px; }
+        .page-header h2 { font-size: 1.8rem; color: #fff; display: flex; align-items: center; gap: 12px; }
+        .page-header .subtitle { color: #6a7a90; font-size: 0.9rem; margin-top: 5px; }
+
+        /* Card */
+        .card {
+            background: linear-gradient(145deg, #141824 0%, #1c2235 100%);
+            border: 1px solid #2a3a5a;
+            border-radius: 16px;
+            padding: 25px;
+            margin-bottom: 20px;
+        }
+
+        /* Table */
+        .table-container {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9rem;
+        }
+
+        thead {
+            background: #0d1118;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        th {
+            padding: 12px 16px;
+            text-align: left;
+            color: #4a8fa5;
+            font-size: 0.75rem;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            border-bottom: 2px solid #2a3a5a;
+        }
+
+        td {
+            padding: 12px 16px;
+            border-bottom: 1px solid #1a2030;
+            color: #e0e0e0;
+        }
+
+        tr:hover {
+            background: rgba(90, 200, 250, 0.05);
+        }
+
+        .rank {
+            font-weight: bold;
+            color: #5ac8fa;
+        }
+
+        .rank-1 { color: #d4af37; }
+        .rank-2 { color: #c0c0c0; }
+        .rank-3 { color: #cd7f32; }
+
+        .score {
+            font-weight: bold;
+            color: #5ac8fa;
+            font-size: 1.1rem;
+        }
+
+        .guess {
+            font-family: 'Courier New', monospace;
+            font-size: 0.85rem;
+            color: #8a9ab0;
+        }
+
+        .round-scores {
+            display: flex;
+            gap: 8px;
+        }
+
+        .round-score {
+            padding: 4px 8px;
+            background: #0d1118;
+            border-radius: 6px;
+            font-size: 0.8rem;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #6a7a90;
+        }
+
+        .no-data {
+            text-align: center;
+            padding: 40px;
+            color: #6a7a90;
+        }
+
+        /* Mobile */
+        @media (max-width: 768px) {
+            .sidebar { transform: translateX(-100%); }
+            .sidebar.open { transform: translateX(0); }
+            .sidebar-toggle { display: block; }
+            .sidebar-overlay.show { display: block; }
+            .main-content { margin-left: 0; padding: 70px 15px 15px; }
+            
+            table { font-size: 0.8rem; }
+            th, td { padding: 8px 10px; }
+        }
+    </style>
+</head>
+<body>
+    <button class="sidebar-toggle" onclick="toggleSidebar()">☰</button>
+    <div class="sidebar-overlay" onclick="toggleSidebar()"></div>
+
+    <div class="app-container">
+        <nav class="sidebar">
+            <div class="sidebar-header">
+                <h1>🎲 Dice Oracle</h1>
+                <div class="subtitle">AI AGENT GAME SYSTEM</div>
+            </div>
+            <div class="nav-menu">
+                <a href="/game" class="nav-item"><span class="icon">🎮</span><span>Live Game</span></a>
+                <a href="/agents" class="nav-item"><span class="icon">🤖</span><span>Agent Control</span></a>
+                <div class="nav-divider"></div>
+                <a href="/competition" class="nav-item"><span class="icon">🏆</span><span>Daily Competition</span></a>
+                <a href="/history" class="nav-item active"><span class="icon">📜</span><span>History</span></a>
+                <div class="nav-divider"></div>
+                <a href="/guide" class="nav-item"><span class="icon">📖</span><span>Guide</span></a>
+                <a href="/docs" class="nav-item"><span class="icon">📚</span><span>API Docs</span></a>
+            </div>
+        </nav>
+
+        <main class="main-content">
+            <div class="page-header">
+                <h2>📜 Competition History</h2>
+                <div class="subtitle">Complete log of all daily competitions</div>
+            </div>
+
+            <div class="card">
+                <div class="table-container" id="tableContainer">
+                    <div class="loading">Loading history...</div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        function toggleSidebar() {
+            document.querySelector('.sidebar').classList.toggle('open');
+            document.querySelector('.sidebar-overlay').classList.toggle('show');
+        }
+
+        async function loadHistory() {
+            try {
+                const resp = await fetch('/competition/history');
+                const data = await resp.json();
+                const history = data.history || [];
+
+                if (history.length === 0) {
+                    document.getElementById('tableContainer').innerHTML = 
+                        '<div class="no-data">No competition data yet. Come back after the first competition!</div>';
+                    return;
+                }
+
+                // Sort by date (newest first), then by rank
+                history.sort((a, b) => {
+                    if (a.date !== b.date) return b.date.localeCompare(a.date);
+                    return a.rank - b.rank;
+                });
+
+                let html = `
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Rank</th>
+                                <th>Agent Name</th>
+                                <th>Round 1</th>
+                                <th>Round 2</th>
+                                <th>Round 3</th>
+                                <th>Total Score</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                `;
+
+                history.forEach(entry => {
+                    const rankClass = entry.rank <= 3 ? `rank-${entry.rank}` : 'rank';
+                    
+                    // Get round data
+                    const rounds = [1, 2, 3].map(rn => {
+                        const round = entry.rounds.find(r => r.round === rn);
+                        if (!round) return '<td>-</td>';
+                        
+                        return `<td>
+                            <div class="guess">Total: ${round.guess_total || '-'}</div>
+                            <div class="guess">[${round.guess_individual?.join(', ') || '-'}]</div>
+                            <div class="round-score">${round.score} pts</div>
+                        </td>`;
+                    }).join('');
+
+                    html += `
+                        <tr>
+                            <td>${entry.date}</td>
+                            <td><span class="${rankClass}">#${entry.rank || '-'}</span></td>
+                            <td><strong>${entry.player_name}</strong></td>
+                            ${rounds}
+                            <td><span class="score">${entry.total_score}</span></td>
+                        </tr>
+                    `;
+                });
+
+                html += '</tbody></table>';
+                document.getElementById('tableContainer').innerHTML = html;
+
+            } catch (e) {
+                console.error('Error loading history:', e);
+                document.getElementById('tableContainer').innerHTML = 
+                    '<div class="no-data">Error loading history. Please try again.</div>';
+            }
+        }
+
+        loadHistory();
+    </script>
+</body>
+</html>

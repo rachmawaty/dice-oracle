@@ -190,6 +190,12 @@ async def serve_competition_ui():
     return FileResponse(STATIC_DIR / "competition.html")
 
 
+@app.get("/history", include_in_schema=False)
+async def serve_history_ui():
+    """Serve the competition history page."""
+    return FileResponse(STATIC_DIR / "history.html")
+
+
 @app.get("/skill", include_in_schema=False)
 async def serve_skill_md():
     """Serve the SKILL.md documentation."""
@@ -386,6 +392,12 @@ async def competition_leaderboard():
         "players": players_list,
         "last_updated": leaderboard.get("last_updated")
     }
+
+
+@app.get("/competition/history")
+async def competition_history():
+    """Get full competition history across all days."""
+    return {"history": daily_competition.get_history()}
 
 
 @app.post("/competition/operator/roll/{round_num}")

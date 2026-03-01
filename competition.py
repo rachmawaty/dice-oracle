@@ -421,6 +421,45 @@ class DailyCompetition:
         
         return {"players": {}, "last_updated": None}
     
+    def get_history(self) -> list[dict]:
+        """Get competition history for all days."""
+        history = []
+        
+        # Read all competition data files
+        for data_file in sorted(DATA_DIR.glob("competition_*.json"), reverse=True):
+            try:
+                data = json.loads(data_file.read_text())
+                date = data.get("date")
+                
+                # Get all players with their results
+                for player_id, player_data in data.get("players", {}).items():
+                    # Build round details
+                    rounds_data = []
+                    for rn in [1, 2, 3]:
+                        guess = player_data.get("guesses", {}).get(str(rn))
+                        score = player_data.get("scores", {}).get(str(rn))
+                        
+                        if guess:
+                            rounds_data.append({
+                                "round": rn,
+                                "guess_total": guess.get("total"),
+                                "guess_individual": guess.get("individual"),
+                                "score": score.get("total") if score else 0
+                            })
+                    
+                    history.append({
+                        "date": date,
+                        "player_id": player_data.get("id"),
+                        "player_name": player_data.get("name"),
+                        "rounds": rounds_data,
+                        "total_score": player_data.get("total_score", 0),
+                        "rank": player_data.get("rank", 0)
+                    })
+            except Exception as e:
+                print(f"Error reading {data_file}: {e}")
+        
+        return history
+    
     def update_leaderboard(self):
         """Update overall leaderboard with today's results."""
         if self.phase != "closed":
