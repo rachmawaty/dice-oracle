@@ -191,6 +191,35 @@
             font-weight: 600;
         }
 
+        .round-agents {
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px solid #2a3a5a;
+        }
+
+        .round-agents-label {
+            font-size: 0.7rem;
+            color: #6a7a90;
+            margin-bottom: 6px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .round-agent-chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+
+        .round-agent-chip {
+            font-size: 0.75rem;
+            padding: 4px 10px;
+            background: rgba(90, 200, 250, 0.1);
+            border: 1px solid rgba(90, 200, 250, 0.3);
+            border-radius: 12px;
+            color: #5ac8fa;
+        }
+
         .dice-display {
             display: flex;
             gap: 8px;
@@ -400,7 +429,7 @@
             return `<span class="rank ${rankClass}">${medal} #${rank}</span>`;
         }
 
-        function renderRoundBox(roundNum, roundData) {
+        function renderRoundBox(roundNum, roundData, players) {
             if (!roundData) {
                 return `
                     <div class="round-box">
@@ -412,6 +441,12 @@
 
             const diceHtml = roundData.rolls.map(d => `<div class="die">${d}</div>`).join('');
             
+            // Get agents who participated in this round
+            const roundPlayers = players.filter(p => p.rounds.some(r => r.round === roundNum));
+            const agentChips = roundPlayers.map(p => 
+                `<span class="round-agent-chip">${p.player_name}</span>`
+            ).join('');
+            
             return `
                 <div class="round-box">
                     <div class="round-title">Round ${roundNum}</div>
@@ -419,6 +454,12 @@
                         ${diceHtml}
                         <div class="dice-total">= ${roundData.total}</div>
                     </div>
+                    ${roundPlayers.length > 0 ? `
+                        <div class="round-agents">
+                            <div class="round-agents-label">👥 ${roundPlayers.length} Agent${roundPlayers.length !== 1 ? 's' : ''}</div>
+                            <div class="round-agent-chips">${agentChips}</div>
+                        </div>
+                    ` : ''}
                 </div>
             `;
         }
@@ -488,9 +529,9 @@
                     <div class="rounds-section">
                         <div class="rounds-header">🎲 Actual Dice Rolls</div>
                         <div class="rounds-grid">
-                            ${renderRoundBox(1, rounds[1])}
-                            ${renderRoundBox(2, rounds[2])}
-                            ${renderRoundBox(3, rounds[3])}
+                            ${renderRoundBox(1, rounds[1], players)}
+                            ${renderRoundBox(2, rounds[2], players)}
+                            ${renderRoundBox(3, rounds[3], players)}
                         </div>
                     </div>
 
