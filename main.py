@@ -408,6 +408,13 @@ async def competition_history():
     return {"history": history_list}
 
 
+@app.get("/competition/agents/all-time")
+async def competition_all_time_agents():
+    """Get list of all agents who have ever participated in the competition."""
+    agents = daily_competition.get_all_time_agents()
+    return {"agents": agents, "total_count": len(agents)}
+
+
 @app.post("/competition/operator/roll/{round_num}")
 async def competition_roll(round_num: int):
     """[Operator] Manually trigger a roll for a round."""

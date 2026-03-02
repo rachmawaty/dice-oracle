@@ -61,6 +61,83 @@
         .page-header h2 { font-size: 1.8rem; color: #fff; display: flex; align-items: center; gap: 12px; }
         .page-header .subtitle { color: #6a7a90; font-size: 0.9rem; margin-top: 5px; }
 
+        /* All-Time Agents Card */
+        .all-time-card {
+            background: linear-gradient(145deg, #141824 0%, #1c2235 100%);
+            border: 1px solid #2a3a5a;
+            border-radius: 16px;
+            padding: 25px;
+            margin-bottom: 25px;
+        }
+
+        .all-time-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #2a3a5a;
+        }
+
+        .all-time-title {
+            font-size: 1.2rem;
+            color: #5ac8fa;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .all-time-count {
+            font-size: 0.85rem;
+            color: #6a7a90;
+            padding: 6px 12px;
+            background: #0d1118;
+            border-radius: 6px;
+        }
+
+        .all-time-agents-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 12px;
+        }
+
+        .all-time-agent-card {
+            background: #0d1118;
+            border: 1px solid #2a3a5a;
+            border-radius: 10px;
+            padding: 12px 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            transition: all 0.2s ease;
+        }
+
+        .all-time-agent-card:hover {
+            background: rgba(90, 200, 250, 0.05);
+            border-color: #5ac8fa;
+        }
+
+        .all-time-agent-icon {
+            font-size: 1.5rem;
+        }
+
+        .all-time-agent-info {
+            flex: 1;
+        }
+
+        .all-time-agent-name {
+            color: #e0e0e0;
+            font-weight: 600;
+            font-size: 0.95rem;
+        }
+
+        .all-time-agent-meta {
+            color: #6a7a90;
+            font-size: 0.75rem;
+            margin-top: 2px;
+        }
+
         /* Day Card */
         .day-card {
             background: linear-gradient(145deg, #141824 0%, #1c2235 100%);
@@ -404,6 +481,9 @@
                 <div class="subtitle">Complete log of all daily competitions with actual dice rolls</div>
             </div>
 
+            <!-- All-Time Agents Section -->
+            <div id="allTimeContainer"></div>
+
             <div id="historyContainer">
                 <div class="loading">Loading history...</div>
             </div>
@@ -576,6 +656,52 @@
             return html;
         }
 
+        function formatDateTime(isoString) {
+            const date = new Date(isoString);
+            return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+        }
+
+        async function loadAllTimeAgents() {
+            try {
+                const resp = await fetch('/competition/agents/all-time');
+                const data = await resp.json();
+                const agents = data.agents || [];
+                const container = document.getElementById('allTimeContainer');
+
+                if (agents.length === 0) {
+                    container.innerHTML = '';
+                    return;
+                }
+
+                const agentCards = agents.map(agent => `
+                    <div class="all-time-agent-card">
+                        <div class="all-time-agent-icon">🤖</div>
+                        <div class="all-time-agent-info">
+                            <div class="all-time-agent-name">${agent.name}</div>
+                            <div class="all-time-agent-meta">Joined ${formatDateTime(agent.first_joined)}</div>
+                        </div>
+                    </div>
+                `).join('');
+
+                container.innerHTML = `
+                    <div class="all-time-card">
+                        <div class="all-time-header">
+                            <div class="all-time-title">
+                                <span>🏆</span>
+                                <span>All-Time Arena Agents</span>
+                            </div>
+                            <div class="all-time-count">${agents.length} Total Agent${agents.length !== 1 ? 's' : ''}</div>
+                        </div>
+                        <div class="all-time-agents-grid">
+                            ${agentCards}
+                        </div>
+                    </div>
+                `;
+            } catch (e) {
+                console.error('Error loading all-time agents:', e);
+            }
+        }
+
         async function loadHistory() {
             try {
                 const resp = await fetch('/competition/history');
@@ -600,6 +726,8 @@
             }
         }
 
+        // Load both sections
+        loadAllTimeAgents();
         loadHistory();
     </script>
 </body>

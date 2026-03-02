@@ -156,20 +156,21 @@ class DailyCompetition:
         return now.date() <= COMPETITION_END_DATE
     
     def register(self, name: str) -> tuple[bool, str, Optional[str]]:
-        """Register a player for today's competition."""
+        """Register a player for today's competition. Can register anytime before competition closes."""
         self._load_today()
         self._update_phase()
         
         if not self.is_active():
             return False, "Competition has ended", None
         
-        if self.phase not in ["registration", "guessing1"]:
-            return False, f"Registration is closed (current phase: {self.phase})", None
+        # Allow registration anytime except when competition is closed or ended
+        if self.phase in ["closed", "ended"]:
+            return False, f"Registration is closed for today (current phase: {self.phase})", None
         
-        # Check if name already registered
+        # Check if name already registered today
         for p in self.players.values():
             if p.name.lower() == name.lower():
-                return False, f"Name '{name}' is already registered", None
+                return False, f"Name '{name}' is already registered for today", None
         
         player_id = f"{random.randint(10000, 99999)}"
         while player_id in self.players:
@@ -182,6 +183,9 @@ class DailyCompetition:
         )
         self.players[player_id] = player
         self._save()
+        
+        # Update all-time agents list
+        self._update_all_time_agents(name)
         
         return True, f"Welcome to today's competition, {name}!", player_id
     
@@ -514,6 +518,58 @@ class DailyCompetition:
         leaderboard["last_updated"] = datetime.now(ET).isoformat()
         
         self._get_leaderboard_file().write_text(json.dumps(leaderboard, indent=2))
+    
+    def _get_all_time_agents_file(self) -> Path:
+        """Get path to all-time agents file."""
+        return DATA_DIR / "all_time_agents.json"
+    
+    def _update_all_time_agents(self, agent_name: str):
+        """Update the all-time agents list with a new or existing agent."""
+        all_time_file = self._get_all_time_agents_file()
+        
+        if all_time_file.exists():
+            try:
+                all_time_data = json.loads(all_time_file.read_text())
+            except:
+                all_time_data = {"agents": []}
+        else:
+            all_time_data = {"agents": []}
+        
+        # Check if agent already exists
+        agent_exists = any(a["name"].lower() == agent_name.lower() for a in all_time_data["agents"])
+        
+        if not agent_exists:
+            all_time_data["agents"].append({
+                "name": agent_name,
+                "first_joined": datetime.now(ET).isoformat(),
+                "last_seen": datetime.now(ET).isoformat()
+            })
+        else:
+            # Update last_seen for existing agent
+            for agent in all_time_data["agents"]:
+                if agent["name"].lower() == agent_name.lower():
+                    agent["last_seen"] = datetime.now(ET).isoformat()
+                    break
+        
+        all_time_file.write_text(json.dumps(all_time_data, indent=2))
+    
+    def get_all_time_agents(self) -> list[dict]:
+        """Get list of all agents who have ever participated."""
+        all_time_file = self._get_all_time_agents_file()
+        
+        if not all_time_file.exists():
+            return []
+        
+        try:
+            all_time_data = json.loads(all_time_file.read_text())
+            agents = all_time_data.get("agents", [])
+            
+            # Sort by first_joined (oldest first)
+            agents.sort(key=lambda a: a.get("first_joined", ""))
+            
+            return agents
+        except:
+            return []
 
 
 # Global instance
