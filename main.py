@@ -20,6 +20,7 @@ from models import (
 )
 from game import DiceGame
 from competition import daily_competition
+from agents import agent_registry
 from run_agents import start_agents, stop_agents
 
 # Timezone
@@ -29,9 +30,21 @@ ET = ZoneInfo("America/New_York")
 ENABLE_AGENTS = False
 
 
+# Agent registration models
+class AgentRegisterRequest(BaseModel):
+    name: str
+
+
+class AgentRegisterResponse(BaseModel):
+    success: bool
+    message: str
+    player_id: Optional[str] = None
+    agent_name: Optional[str] = None
+
+
 # Competition request models
 class CompetitionRegisterRequest(BaseModel):
-    name: str
+    player_id: str  # Now requires existing player_id from agent registration
 
 
 class CompetitionGuessRequest(BaseModel):
@@ -307,6 +320,49 @@ async def get_results():
     return game.results.model_dump()
 
 
+# ============== AGENT REGISTRATION API ==============
+
+@app.post("/agents/register", response_model=AgentRegisterResponse)
+async def register_agent(request: AgentRegisterRequest):
+    """
+    Register a new agent and get a permanent player_id.
+    This can be done anytime - no time restrictions.
+    Use the player_id for daily competition registration.
+    """
+    success, message, player_id = agent_registry.register_agent(request.name)
+    
+    if not success:
+        raise HTTPException(status_code=400, detail=message)
+    
+    return AgentRegisterResponse(
+        success=True,
+        message=message,
+        player_id=player_id,
+        agent_name=request.name
+    )
+
+
+@app.get("/agents/list")
+async def list_agents():
+    """Get list of all registered agents (all-time)."""
+    agents = agent_registry.list_all_agents()
+    return {
+        "agents": agents,
+        "total_count": len(agents)
+    }
+
+
+@app.get("/agents/{player_id}")
+async def get_agent(player_id: str):
+    """Get agent details by player_id."""
+    agent = agent_registry.get_agent(player_id)
+    
+    if not agent:
+        raise HTTPException(status_code=404, detail="Agent not found")
+    
+    return agent.model_dump()
+
+
 # ============== COMPETITION API ENDPOINTS ==============
 
 @app.get("/competition/state")
@@ -323,15 +379,31 @@ async def competition_players():
 
 @app.post("/competition/register")
 async def competition_register(request: CompetitionRegisterRequest):
-    """Register for today's competition."""
-    success, message, player_id = daily_competition.register(request.name)
+    """
+    Register for today's competition using your permanent player_id.
+    You must first register as an agent via POST /agents/register to get a player_id.
+    """
+    # Verify agent exists
+    agent = agent_registry.get_agent(request.player_id)
+    if not agent:
+        raise HTTPException(
+            status_code=404, 
+            detail=f"Agent with player_id {request.player_id} not found. Please register first at POST /agents/register"
+        )
+    
+    # Register for today's competition
+    success, message = daily_competition.register(request.player_id, agent.name)
     
     if not success:
         raise HTTPException(status_code=400, detail=message)
     
+    # Update agent activity
+    agent_registry.update_activity(request.player_id)
+    
     await manager.broadcast({
         "event": "competition_player_joined",
-        "player_name": request.name,
+        "player_id": request.player_id,
+        "player_name": agent.name,
         "players_count": len(daily_competition.players)
     })
     
@@ -410,8 +482,11 @@ async def competition_history():
 
 @app.get("/competition/agents/all-time")
 async def competition_all_time_agents():
-    """Get list of all agents who have ever participated in the competition."""
-    agents = daily_competition.get_all_time_agents()
+    """
+    Get list of all agents who have ever registered (all-time).
+    Alias for GET /agents/list - kept for backward compatibility.
+    """
+    agents = agent_registry.list_all_agents()
     return {"agents": agents, "total_count": len(agents)}
 
 

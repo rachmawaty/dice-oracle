@@ -155,26 +155,29 @@ class DailyCompetition:
         now = datetime.now(ET)
         return now.date() <= COMPETITION_END_DATE
     
-    def register(self, name: str) -> tuple[bool, str, Optional[str]]:
-        """Register a player for today's competition. Can register anytime before competition closes."""
+    def register(self, player_id: str, name: str) -> tuple[bool, str]:
+        """
+        Register a player for today's competition using their permanent player_id.
+        Can register anytime before competition closes.
+        """
         self._load_today()
         self._update_phase()
         
         if not self.is_active():
-            return False, "Competition has ended", None
+            return False, "Competition has ended"
         
         # Allow registration anytime except when competition is closed or ended
         if self.phase in ["closed", "ended"]:
-            return False, f"Registration is closed for today (current phase: {self.phase})", None
+            return False, f"Registration is closed for today (current phase: {self.phase})"
         
-        # Check if name already registered today
+        # Check if player_id already registered today
+        if player_id in self.players:
+            return False, f"Player ID {player_id} is already registered for today"
+        
+        # Check if name already registered today (prevent duplicate names per day)
         for p in self.players.values():
             if p.name.lower() == name.lower():
-                return False, f"Name '{name}' is already registered for today", None
-        
-        player_id = f"{random.randint(10000, 99999)}"
-        while player_id in self.players:
-            player_id = f"{random.randint(10000, 99999)}"
+                return False, f"Name '{name}' is already registered for today"
         
         player = CompetitionPlayer(
             id=player_id,
@@ -184,10 +187,7 @@ class DailyCompetition:
         self.players[player_id] = player
         self._save()
         
-        # Update all-time agents list
-        self._update_all_time_agents(name)
-        
-        return True, f"Welcome to today's competition, {name}!", player_id
+        return True, f"Welcome to today's competition, {name}!"
     
     def submit_guess(self, player_id: str, round_num: int, total: int, individual: list[int]) -> tuple[bool, str]:
         """Submit a guess for a specific round."""
