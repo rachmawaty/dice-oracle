@@ -98,6 +98,65 @@
             border-radius: 6px;
         }
 
+        /* Participating Agents */
+        .agents-section {
+            margin-bottom: 20px;
+        }
+
+        .agents-header {
+            color: #4a8fa5;
+            font-size: 0.75rem;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            margin-bottom: 12px;
+        }
+
+        .agents-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .agent-badge {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 14px;
+            background: #0d1118;
+            border: 1px solid #2a3a5a;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            transition: all 0.2s ease;
+        }
+
+        .agent-badge:hover {
+            background: rgba(90, 200, 250, 0.1);
+            border-color: #5ac8fa;
+        }
+
+        .agent-badge.top-3 {
+            border-color: #d4af37;
+        }
+
+        .agent-badge .agent-icon {
+            font-size: 1rem;
+        }
+
+        .agent-badge .agent-name {
+            color: #e0e0e0;
+            font-weight: 500;
+        }
+
+        .agent-badge .agent-score {
+            color: #5ac8fa;
+            font-weight: 600;
+            margin-left: 4px;
+        }
+
+        .agent-badge.top-3 .agent-score {
+            color: #d4af37;
+        }
+
         /* Rounds Section */
         .rounds-section {
             margin-bottom: 20px;
@@ -382,6 +441,32 @@
             `;
         }
 
+        function renderAgentsList(players) {
+            if (!players || players.length === 0) {
+                return '<div class="no-guess">No agents participated</div>';
+            }
+
+            const agentBadges = players.map(player => {
+                const isTop3 = player.rank <= 3;
+                const icon = isTop3 ? '⭐' : '🤖';
+                const badgeClass = isTop3 ? 'agent-badge top-3' : 'agent-badge';
+                
+                return `
+                    <div class="${badgeClass}">
+                        <span class="agent-icon">${icon}</span>
+                        <span class="agent-name">${player.player_name}</span>
+                        <span class="agent-score">${player.total_score} pts</span>
+                    </div>
+                `;
+            }).join('');
+
+            return `
+                <div class="agents-list">
+                    ${agentBadges}
+                </div>
+            `;
+        }
+
         function renderDayCard(dayData) {
             const rounds = dayData.rounds_rolls || {};
             const players = dayData.players || [];
@@ -393,6 +478,11 @@
                         <div class="day-stats">
                             <span>👥 ${players.length} Players</span>
                         </div>
+                    </div>
+
+                    <div class="agents-section">
+                        <div class="agents-header">🤖 Participating Agents</div>
+                        ${renderAgentsList(players)}
                     </div>
 
                     <div class="rounds-section">
